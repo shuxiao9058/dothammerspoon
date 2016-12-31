@@ -1,29 +1,34 @@
--- Replace Caffeine.app with 18 lines of Lua :D
--- Caffeine replacement
+print("Loading caffeine")
+
 local imagePath =  os.getenv("HOME") .. '/.hammerspoon/assets/';
 local iconAwake = imagePath .."caffeine-on.pdf"
 local iconSleep = imagePath .."caffeine-off.pdf"
 
-local caffeine = hs.menubar.new()
+local obj = {}
+obj.__index = obj
 
-function setCaffeineDisplay(state)
+obj.menuBarItem = nil
+
+function obj:start()
+    self.menuBarItem = hs.menubar.new()
+
+    self.menuBarItem:setClickCallback(self.clicked)
+    self.setDisplay(hs.caffeinate.get("displayIdle"))
+
+    return self
+end
+
+function obj.setDisplay(state)
+    local result
     if state then
-        caffeine:setIcon(iconAwake)
-        -- caffeine:setTooltip(imagePath .."Awake - machine will refuse to sleep")
-        caffeine:setTooltip("Awake - machine will refuse to sleep")
+        result = obj.menuBarItem:setIcon(iconAwake)
     else
-        caffeine:setIcon(iconSleep)
-        caffeine:setTooltip("Sleepy - machine is allowed to sleep")
+        result = obj.menuBarItem:setIcon(iconSleep)
     end
 end
 
-function caffeineClicked()
-    setCaffeineDisplay(hs.caffeinate.toggle("displayIdle"))
+function obj.clicked()
+    obj.setDisplay(hs.caffeinate.toggle("displayIdle"))
 end
 
-if caffeine then
-    caffeine:setClickCallback(caffeineClicked)
-    hs.caffeinate.set("displayIdle", true, true)
-    setCaffeineDisplay(hs.caffeinate.get("displayIdle"))
-end
-
+return obj

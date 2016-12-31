@@ -1,24 +1,43 @@
+local flux = require "flux"
+local utils = require "utils"
+
+-- Replace Caffeine.app with 18 lines of Lua :D
+caffeine = require("caffeine"):start()
+
 hs.hotkey.alertDuration=0
 hs.window.animationDuration = 0
 
-hyper = {"cmd", "alt", "ctrl", "shift"}
-
 -- set the keyboard layout to Programmer Dvorak
 hs.keycodes.setLayout("Programmer Dvorak")
-loggerinfo = hs.logger.new('My Settings', 'info')
 
--- require 'keyboard-layout-init.lua'
--- require('hyper')
-require('caffeine')
+-- Hotkey definitions
+local HYPER = {"ctrl", "alt", "cmd", "shift"}
+local HYPER_MINUS_SHIFT = {"ctrl", "alt", "cmd"}
 
+-- And now for hotkeys relating to Hyper. First, let's capture all of the functions, then we can just quickly iterate and bind them
+hyperfns = {}
+
+-- Increase / decrease flux intensity.
+hyperfns[','] = flux.decreaseLevel
+hyperfns['.'] = flux.increaseLevel
 -- Lock System
-hs.hotkey.bind(hyper, 'L', 'Lock system', function() hs.caffeinate.lockScreen() end)
+hyperfns['L'] = function() hs.caffeinate.lockScreen() end 
 -- Sleep system
-hs.hotkey.bind(hyper, 'S', 'Put system to sleep',function() hs.caffeinate.systemSleep() end)
-
+hyperfns['S'] = function() hs.caffeinate.systemSleep() end 
+hyperfns['C'] = caffeine.clicked
 -- Window Hints
--- hs.hints.style = 'vimperator'
-hs.hotkey.bind(hyper, 'H', 'Show window hints', hs.hints.windowHints)
+hyperfns['H'] = hs.hints.windowHints
+
+-- Application hotkeys
+hyperfns['I'] = function() utils.toggle_application("iTerm2") end
+hyperfns['G'] = function() utils.toggle_application("Google Chrome") end
+
+for _hotkey, _fn in pairs(hyperfns) do
+    hs.hotkey.bind(HYPER, _hotkey, _fn)
+end
+
+-- all APP fullscreen with 'Command+Return'
+hs.hotkey.bind('cmd', 'return', function() hs.window.focusedWindow():toggleFullScreen() end)
 
 -- Reload config
 function reloadConfig(paths)
@@ -41,9 +60,9 @@ end
 configFileWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig)
 configFileWatcher:start()
 
-hs.hotkey.bind(hyper, 'R',  function()
-      hs.reload()
-end)
+-- hs.hotkey.bind(HYPER, 'R',  function()
+--       hs.reload()
+-- end)
 
 -- hs.alert.show("Hammerspoon Loaded")
 -- Finally, show a notification that we finished loading the config successfully
