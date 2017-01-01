@@ -1,3 +1,15 @@
+-- http://www.hammerspoon.org/go/#winresize
+-- hammerspoon 不能实现的区分左右cmd shift等，也不能实别Fn键，
+-- 这些可以与karabiner 通过Hammerspoon with URLs实现通信,即，
+-- 通过karabiner 来按键，而 hammerspoon来实现相应的事件
+-- 如
+-- 在命令行下调用open -g "hammerspoon://someAlert?someParam=hello"
+-- hs.urlevent.bind("someAlert", function(eventName, params)
+--                     if params["someParam"] then
+--                        hs.alert.show(params["someParam"])
+--                     end
+-- end)
+
 local flux = require "flux"
 local utils = require "utils"
 
@@ -33,10 +45,18 @@ hyperfns['C'] = caffeine.clicked
 hyperfns['H'] = hs.hints.windowHints
 
 -- Application hotkeys
-hyperfns['I'] = function() utils.toggle_application("iTerm2") end
-hyperfns['G'] = function() utils.toggle_application("Google Chrome") end
-
+-- hyperfns['I'] = function() utils.toggle_application("iTerm2") end
+-- hyperfns['G'] = function() utils.toggle_application("Google Chrome") end
+hyperfns['I'] = function() utils.toggleApp("com.googlecode.iterm2") end
+hyperfns['G'] = function() utils.toggleApp("com.google.Chrome") end
+hyperfns['E'] = function() utils.toggleEmacs() end
 hyperfns['M'] = function() mouseCircle:show() end
+
+hs.urlevent.bind("toggleChrome", function(eventName, params)  utils.toggleApp("com.google.Chrome") end)
+hs.urlevent.bind("toggleSafari", function(eventName, params)  utils.toggleApp("com.apple.Safari") end)
+hs.urlevent.bind("toggleIterm2", function(eventName, params)  utils.toggleApp("com.googlecode.iterm2") end)
+hs.urlevent.bind("toggleEmacs", function(eventName, params) utils.toggleEmacs() end)
+-- open -g "hammerspoon://toggleEmacs"
 
 for _hotkey, _fn in pairs(hyperfns) do
     hs.hotkey.bind(HYPER, _hotkey, _fn)
@@ -57,18 +77,19 @@ chooser:queryChangedCallback(function(query)
            ["text"] = string.format("Search Google for `%s`", query),
             ["subText"] = string.format("https://www.google.com/search?q=%s", utils.urlencode(query)),
         },
-        {
-            ["text"] = string.format("Search Google Finance for `%s`", query),
-            ["subText"] = string.format("https://www.google.com/finance?q=%s", utils.urlencode(query)),
-        },
-        {
-            ["text"] = string.format("Open subreddit `%s`", query),
-            ["subText"] = string.format("https://www.reddit.com/r/%s", utils.urlencode(query)),
-        },
+        -- {
+        --     ["text"] = string.format("Search Google Finance for `%s`", query),
+        --     ["subText"] = string.format("https://www.google.com/finance?q=%s", utils.urlencode(query)),
+        -- },
+        -- {
+        --     ["text"] = string.format("Open subreddit `%s`", query),
+        --     ["subText"] = string.format("https://www.reddit.com/r/%s", utils.urlencode(query)),
+        -- },
     })
 end)
+
 chooser:bgDark(true)
-chooser:rows(3)
+chooser:rows(1)
 lastFocus = nil
 -- hs.hotkey.bind({"cmd"}, "space", function()
 hs.hotkey.bind(HYPER, "space", function()
