@@ -50,13 +50,17 @@ hyperfns['H'] = hs.hints.windowHints
 hyperfns['I'] = function() utils.toggleApp("com.googlecode.iterm2") end
 hyperfns['G'] = function() utils.toggleApp("com.google.Chrome") end
 hyperfns['E'] = function() utils.toggleEmacs() end
+hyperfns['F'] = function() utils.toggleFinder() end
 hyperfns['M'] = function() mouseCircle:show() end
 
 hs.urlevent.bind("toggleChrome", function(eventName, params)  utils.toggleApp("com.google.Chrome") end)
 hs.urlevent.bind("toggleSafari", function(eventName, params)  utils.toggleApp("com.apple.Safari") end)
 hs.urlevent.bind("toggleIterm2", function(eventName, params)  utils.toggleApp("com.googlecode.iterm2") end)
-hs.urlevent.bind("toggleEmacs", function(eventName, params) utils.toggleEmacs() end)
 -- open -g "hammerspoon://toggleEmacs"
+hs.urlevent.bind("toggleEmacs", function(eventName, params) utils.toggleEmacs() end)
+-- open -g "hammerspoon://toggleFinder"
+hs.urlevent.bind("toggleFinder", function(eventName, params) utils.toggleFinder() end)
+
 
 for _hotkey, _fn in pairs(hyperfns) do
     hs.hotkey.bind(HYPER, _hotkey, _fn)

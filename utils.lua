@@ -113,6 +113,66 @@ function utils.toggleEmacs()        --    toggle emacsclient if emacs daemon not
    end
 end
 
+---------------------------------------------------------------
+function utils.toggleFinder()
+   local appBundleID="com.apple.finder"
+   local topWin = hs.window.focusedWindow()
+   if topWin==nil then
+      return
+   end
+   local topApp = topWin:application()
+   -- local topApp =hs.application.frontmostApplication()
+
+   -- The desktop belongs to Finder.app: when Finder is the active application, you can focus the desktop by cycling through windows via cmd-`
+   -- The desktop window has no id, a role of AXScrollArea and no subrole
+   -- and #topApp:visibleWindows()>0
+   if topApp ~= nil and topApp:bundleID() == appBundleID   and topWin:role() ~= "AXScrollArea" then
+      topApp:hide()
+   else
+      finderApp=hs.application.get(appBundleID)
+      if finderApp==nil then
+         hs.application.launchOrFocusByBundleID(appBundleID)
+         return
+      end
+      local wins=finderApp:allWindows()
+      local isWinExists=true
+      if #wins==0  then
+         isWinExists=false
+      elseif  (wins[1]:role() =="AXScrollArea" and #wins==1 )  then
+         isWinExists=false
+      end
+
+      -- local wins=app:visibleWindows()
+      if not isWinExists then
+         wins=hs.window.filter.new(false):setAppFilter("Finder",{}):getWindows()
+      end
+
+
+      if #wins==0 then
+         hs.application.launchOrFocusByBundleID(appBundleID)
+         for _,win in pairs(wins) do
+            if win:isMinimized() then
+               win:unminimize()
+            end
+
+            win:application():activate(true)
+            win:application():unhide()
+            win:focus()
+         end
+      else
+         for _,win in pairs(wins) do
+            if win:isMinimized() then
+               win:unminimize()
+            end
+
+            win:application():activate(true)
+            win:application():unhide()
+            win:focus()
+         end
+      end
+   end
+end
+
 function utils.urlencode(str)
    if (str) then
       str = string.gsub (str, "\n", "\r\n")
