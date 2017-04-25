@@ -28,7 +28,7 @@ local HYPER = {"ctrl", "alt", "cmd", "shift"}
 local HYPER_MINUS_SHIFT = {"ctrl", "alt", "cmd"}
 
 -- set the keyboard layout to Programmer Dvorak
-hs.keycodes.setLayout("Programmer Dvorak")
+hs.keycodes.setLayout("Dvorak")
 
 -- And now for hotkeys relating to Hyper. First, let's capture all of the functions, then we can just quickly iterate and bind them
 hyperfns = {}
@@ -40,7 +40,7 @@ hyperfns['.'] = flux.increaseLevel
 hyperfns['L'] = function() hs.caffeinate.lockScreen() end 
 -- Sleep system
 hyperfns['S'] = function() hs.caffeinate.systemSleep() end 
-hyperfns['C'] = caffeine.clicked
+-- hyperfns['C'] = caffeine.clicked
 -- Window Hints
 hyperfns['H'] = hs.hints.windowHints
 
@@ -49,9 +49,12 @@ hyperfns['H'] = hs.hints.windowHints
 -- hyperfns['G'] = function() utils.toggle_application("Google Chrome") end
 hyperfns['I'] = function() utils.toggleApp("com.googlecode.iterm2") end
 hyperfns['G'] = function() utils.toggleApp("com.google.Chrome") end
+hyperfns['W'] = function() utils.toggleApp("com.tencent.xinWeChat") end
 hyperfns['E'] = function() utils.toggleEmacs() end
 hyperfns['F'] = function() utils.toggleFinder() end
-hyperfns['M'] = function() mouseCircle:show() end
+-- hyperfns['M'] = function() mouseCircle:show() end
+hyperfns['M'] = function() utils.toggleMaximized() end
+   -- hs.hotkey.bind(hyper, "M", toggleMaximized)
 
 hs.urlevent.bind("toggleChrome", function(eventName, params)  utils.toggleApp("com.google.Chrome") end)
 hs.urlevent.bind("toggleSafari", function(eventName, params)  utils.toggleApp("com.apple.Safari") end)
@@ -61,14 +64,15 @@ hs.urlevent.bind("toggleEmacs", function(eventName, params) utils.toggleEmacs() 
 -- open -g "hammerspoon://toggleFinder"
 hs.urlevent.bind("toggleFinder", function(eventName, params) utils.toggleFinder() end)
 
-
 for _hotkey, _fn in pairs(hyperfns) do
     hs.hotkey.bind(HYPER, _hotkey, _fn)
 end
 
--- all APP fullscreen with 'Command+Return'
-hs.hotkey.bind('cmd', 'return', function() hs.window.focusedWindow():toggleFullScreen() end)
+-- hyper minus shift keybind
+hs.hotkey.bind(HYPER_MINUS_SHIFT, 'C', caffeine.clicked)
 
+-- all APP fullscreen with 'Command+Return'
+-- hs.hotkey.bind('cmd', 'return', function() hs.window.focusedWindow():toggleFullScreen() end)
 
 -- Spotlight-like Google search
 chooser = hs.chooser.new(function(args)
@@ -105,6 +109,44 @@ hs.hotkey.bind(HYPER, "space", function()
         chooser:show()
     end
 end)
+
+-- Keyboard Settting
+---- general setting
+------- caps to ctrl and esc
+sendESC = true
+maxFlag = 0
+controlKeyTimer =
+hs.timer.delayed.new(0.15, function() sendESC = false end)
+
+controlHandler = function(evt)
+    local newMods = evt:getFlags()
+    local count = 0
+    for _ in pairs(newMods) do
+        count = count + 1
+    end
+    if maxFlag < count then maxFlag = count end
+    if  1 == maxFlag and newMods["ctrl"] then
+        sendESC = true
+        controlKeyTimer:start()
+        return true
+    end
+    if 0 == count then
+        if 1 == maxFlag and sendESC then
+            hs.eventtap.keyStroke({}, "ESCAPE", 5)
+            sendESC = false
+            maxFlag = 0
+            controlKeyTimer:stop()
+            return true
+        end
+        sendESC = false
+        maxFlag = 0
+    end
+    return false
+end
+controlTap = hs.eventtap.new(
+    {hs.eventtap.event.types.flagsChanged}, controlHandler)
+controlTap:start()
+-- end caps to ctrl and esc
 
 -- Reload config
 function reloadConfig(paths)
