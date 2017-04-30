@@ -27,7 +27,7 @@ hs.window.animationDuration = 0
 local HYPER = {"ctrl", "alt", "cmd", "shift"}
 local HYPER_MINUS_SHIFT = {"ctrl", "alt", "cmd"}
 
--- set the keyboard layout to Programmer Dvorak
+-- set the keyboard layout to Dvorak
 hs.keycodes.setLayout("Dvorak")
 
 -- And now for hotkeys relating to Hyper. First, let's capture all of the functions, then we can just quickly iterate and bind them
@@ -110,43 +110,43 @@ hs.hotkey.bind(HYPER, "space", function()
     end
 end)
 
--- Keyboard Settting
----- general setting
-------- caps to ctrl and esc
-sendESC = true
-maxFlag = 0
-controlKeyTimer =
-hs.timer.delayed.new(0.15, function() sendESC = false end)
+-- -- Keyboard Settting
+-- ---- general setting
+-- ------- caps to ctrl and esc
+-- sendESC = true
+-- maxFlag = 0
+-- controlKeyTimer =
+-- hs.timer.delayed.new(0.15, function() sendESC = false end)
 
-controlHandler = function(evt)
-    local newMods = evt:getFlags()
-    local count = 0
-    for _ in pairs(newMods) do
-        count = count + 1
-    end
-    if maxFlag < count then maxFlag = count end
-    if  1 == maxFlag and newMods["ctrl"] then
-        sendESC = true
-        controlKeyTimer:start()
-        return true
-    end
-    if 0 == count then
-        if 1 == maxFlag and sendESC then
-            hs.eventtap.keyStroke({}, "ESCAPE", 5)
-            sendESC = false
-            maxFlag = 0
-            controlKeyTimer:stop()
-            return true
-        end
-        sendESC = false
-        maxFlag = 0
-    end
-    return false
-end
-controlTap = hs.eventtap.new(
-    {hs.eventtap.event.types.flagsChanged}, controlHandler)
-controlTap:start()
--- end caps to ctrl and esc
+-- controlHandler = function(evt)
+--     local newMods = evt:getFlags()
+--     local count = 0
+--     for _ in pairs(newMods) do
+--         count = count + 1
+--     end
+--     if maxFlag < count then maxFlag = count end
+--     if  1 == maxFlag and newMods["ctrl"] then
+--         sendESC = true
+--         controlKeyTimer:start()
+--         return true
+--     end
+--     if 0 == count then
+--         if 1 == maxFlag and sendESC then
+--             hs.eventtap.keyStroke({}, "ESCAPE", 5)
+--             sendESC = false
+--             maxFlag = 0
+--             controlKeyTimer:stop()
+--             return true
+--         end
+--         sendESC = false
+--         maxFlag = 0
+--     end
+--     return false
+-- end
+-- controlTap = hs.eventtap.new(
+--     {hs.eventtap.event.types.flagsChanged}, controlHandler)
+-- controlTap:start()
+-- -- end caps to ctrl and esc
 
 -- Reload config
 function reloadConfig(paths)
