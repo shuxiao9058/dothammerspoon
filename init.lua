@@ -57,7 +57,7 @@ hyperfns['L'] = function() hs.caffeinate.lockScreen() end
 hyperfns['S'] = function() hs.caffeinate.systemSleep() end 
 -- hyperfns['C'] = caffeine.clicked
 -- Window Hints
-hyperfns['H'] = hs.hints.windowHints
+hyperfns['U'] = hs.hints.windowHints
 
 -- Application hotkeys
 -- hyperfns['I'] = function() utils.toggle_application("iTerm2") end
@@ -73,6 +73,9 @@ hyperfns['M'] = function() utils.toggleMaximized() end
 
 -- switch
 hyperfns['-'] = wifi.toggleWifi
+hyperfns['C'] = caffeine.clicked
+-- hs.hotkey.bind(HYPER_MINUS_SHIFT, 'C', caffeine.clicked)
+
 
 hs.urlevent.bind("toggleChrome", function(eventName, params)  utils.toggleApp("com.google.Chrome") end)
 hs.urlevent.bind("toggleSafari", function(eventName, params)  utils.toggleApp("com.apple.Safari") end)
@@ -86,8 +89,8 @@ for _hotkey, _fn in pairs(hyperfns) do
     hs.hotkey.bind(HYPER, _hotkey, _fn)
 end
 
--- hyper minus shift keybind
-hs.hotkey.bind(HYPER_MINUS_SHIFT, 'C', caffeine.clicked)
+-- -- hyper minus shift keybind
+-- hs.hotkey.bind(HYPER_MINUS_SHIFT, 'C', caffeine.clicked)
 
 -- all APP fullscreen with 'Command+Return'
 -- hs.hotkey.bind('cmd', 'return', function() hs.window.focusedWindow():toggleFullScreen() end)
@@ -166,26 +169,26 @@ end)
 -- controlTap:start()
 -- -- end caps to ctrl and esc
 
--- Reload config
-function reloadConfig(paths)
-    doReload = false
-    for _,file in pairs(paths) do
-        if file:sub(-4) == ".lua" then
-            print("A lua file changed, doing reload")
-            doReload = true
-        end
-    end
-    if not doReload then
-        print("No lua file changed, skipping reload")
-        return
-    end
+-- -- Reload config
+-- function reloadConfig(paths)
+--     doReload = false
+--     for _,file in pairs(paths) do
+--         if file:sub(-4) == ".lua" then
+--             print("A lua file changed, doing reload")
+--             doReload = true
+--         end
+--     end
+--     if not doReload then
+--         print("No lua file changed, skipping reload")
+--         return
+--     end
 
-    hs.reload()
-end
+--     hs.reload()
+-- end
 
 -- Automatically reload Hammerspoon config
-configFileWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig)
-configFileWatcher:start()
+-- configFileWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig)
+-- configFileWatcher:start()
 
 -- hs.hotkey.bind(HYPER, 'R',  function()
 --       hs.reload()
