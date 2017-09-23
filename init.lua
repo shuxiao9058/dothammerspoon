@@ -10,8 +10,19 @@
 --                     end
 -- end)
 
+--
+-- Load the information from the Alfred configuration.
+--
+require("alfred")
+
+--
+-- Place all your functions and configurations here. Running "hs:upgrade" will just
+-- over right the alfred.lua file. DO NOT Change the alfred.lua file!
+--
+
 local flux = require "flux"
 local utils = require "utils"
+local wifi = require "wifi"
 
 -- I always end up losing my mouse pointer, particularly if it's on a monitor full of terminals.
 -- This draws a bright red circle around the pointer for a few seconds
@@ -21,6 +32,10 @@ mouseCircle = require("mouseCircle"):start()
 caffeine = require("caffeine"):start()
 
 hs.hotkey.alertDuration=0
+
+--
+-- Turn off Animations.
+--
 hs.window.animationDuration = 0
 
 -- Hotkey definitions
@@ -28,7 +43,7 @@ local HYPER = {"ctrl", "alt", "cmd", "shift"}
 local HYPER_MINUS_SHIFT = {"ctrl", "alt", "cmd"}
 
 -- set the keyboard layout to Dvorak
-hs.keycodes.setLayout("Dvorak")
+-- hs.keycodes.setLayout("Dvorak")
 
 -- And now for hotkeys relating to Hyper. First, let's capture all of the functions, then we can just quickly iterate and bind them
 hyperfns = {}
@@ -49,12 +64,15 @@ hyperfns['H'] = hs.hints.windowHints
 -- hyperfns['G'] = function() utils.toggle_application("Google Chrome") end
 hyperfns['I'] = function() utils.toggleApp("com.googlecode.iterm2") end
 hyperfns['G'] = function() utils.toggleApp("com.google.Chrome") end
-hyperfns['W'] = function() utils.toggleApp("com.tencent.xinWeChat") end
+-- hyperfns['W'] = function() utils.toggleApp("com.tencent.xinWeChat") end
 hyperfns['E'] = function() utils.toggleEmacs() end
 hyperfns['F'] = function() utils.toggleFinder() end
 -- hyperfns['M'] = function() mouseCircle:show() end
 hyperfns['M'] = function() utils.toggleMaximized() end
-   -- hs.hotkey.bind(hyper, "M", toggleMaximized)
+-- hs.hotkey.bind(hyper, "M", toggleMaximized)
+
+-- switch
+hyperfns['-'] = wifi.toggleWifi
 
 hs.urlevent.bind("toggleChrome", function(eventName, params)  utils.toggleApp("com.google.Chrome") end)
 hs.urlevent.bind("toggleSafari", function(eventName, params)  utils.toggleApp("com.apple.Safari") end)
@@ -179,6 +197,3 @@ hs.notify.new({
       title='Hammerspoon',
         informativeText='Config loaded'
     }):send()
-
-
-
