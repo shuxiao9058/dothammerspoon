@@ -80,7 +80,7 @@ function utils.toggleMaximized()
         return
     end
 
-    if tostring(win:application():name()) == "Emacs" then
+    if win:application():name() == "Emacs" then
       hs.eventtap.keyStroke({"alt"}, "F10")
       return
     end
