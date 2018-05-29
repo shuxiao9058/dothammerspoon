@@ -74,10 +74,17 @@ local frameCache = {}
 
 -- Toggle current window between its normal size, and being maximized
 function utils.toggleMaximized()
-    local win = hs.window.focusedWindow()
+  local win = hs.window.focusedWindow()
+  -- hs.alert.show("win" .. tostring(win:application():name()))
     if (win == nil) or (win:id() == nil) then
         return
     end
+
+    if tostring(win:application():name()) == "Emacs" then
+      hs.eventtap.keyStroke({"alt"}, "F10")
+      return
+    end
+
     if frameCache[win:id()] then
         win:setFrame(frameCache[win:id()])
         frameCache[win:id()] = nil
