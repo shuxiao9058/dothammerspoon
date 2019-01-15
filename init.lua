@@ -9,7 +9,6 @@
 --                        hs.alert.show(params["someParam"])
 --                     end
 -- end)
-
 --
 -- Load the information from the Alfred configuration.
 --
@@ -31,8 +30,9 @@ mouseCircle = require("mouseCircle"):start()
 -- Replace Caffeine.app with 18 lines of Lua :D
 caffeine = require("caffeine"):start()
 
-hs.hotkey.alertDuration=0
+hs.hotkey.alertDuration = 0
 
+hs.application.enableSpotlightForNameSearches(true)
 --
 -- Turn off Animations.
 --
@@ -52,9 +52,9 @@ hyperfns = {}
 hyperfns[','] = flux.decreaseLevel
 hyperfns['.'] = flux.increaseLevel
 -- Lock System
-hyperfns['L'] = function() hs.caffeinate.lockScreen() end 
+hyperfns['L'] = function() hs.caffeinate.lockScreen() end
 -- Sleep system
-hyperfns['S'] = function() hs.caffeinate.systemSleep() end 
+hyperfns['S'] = function() hs.caffeinate.systemSleep() end
 -- hyperfns['C'] = caffeine.clicked
 -- Window Hints
 hyperfns['U'] = hs.hints.windowHints
@@ -65,7 +65,7 @@ hyperfns['U'] = hs.hints.windowHints
 hyperfns['I'] = function() utils.toggleApp("com.googlecode.iterm2") end
 hyperfns['G'] = function() utils.toggleApp("com.google.Chrome") end
 -- hyperfns['W'] = function() utils.toggleApp("com.tencent.xinWeChat") end
-hyperfns['E'] = function() utils.toggleEmacs() end
+-- hyperfns['E'] = function() utils.toggleEmacs() end
 hyperfns['F'] = function() utils.toggleFinder() end
 -- hyperfns['M'] = function() mouseCircle:show() end
 hyperfns['M'] = function() utils.toggleMaximized() end
@@ -76,18 +76,30 @@ hyperfns['-'] = wifi.toggleWifi
 hyperfns['C'] = caffeine.clicked
 -- hs.hotkey.bind(HYPER_MINUS_SHIFT, 'C', caffeine.clicked)
 
-
-hs.urlevent.bind("toggleChrome", function(eventName, params)  utils.toggleApp("com.google.Chrome") end)
-hs.urlevent.bind("toggleSafari", function(eventName, params)  utils.toggleApp("com.apple.Safari") end)
-hs.urlevent.bind("toggleIterm2", function(eventName, params)  utils.toggleApp("com.googlecode.iterm2") end)
+hs.urlevent.bind(
+    "toggleChrome",
+    function(eventName, params) utils.toggleApp("com.google.Chrome") end
+)
+hs.urlevent.bind(
+    "toggleSafari",
+    function(eventName, params) utils.toggleApp("com.apple.Safari") end
+)
+hs.urlevent.bind(
+    "toggleIterm2",
+    function(eventName, params) utils.toggleApp("com.googlecode.iterm2") end
+)
 -- open -g "hammerspoon://toggleEmacs"
-hs.urlevent.bind("toggleEmacs", function(eventName, params) utils.toggleEmacs() end)
+hs.urlevent.bind(
+    "toggleEmacs",
+    function(eventName, params) utils.toggleEmacs() end
+)
 -- open -g "hammerspoon://toggleFinder"
-hs.urlevent.bind("toggleFinder", function(eventName, params) utils.toggleFinder() end)
+hs.urlevent.bind(
+    "toggleFinder",
+    function(eventName, params) utils.toggleFinder() end
+)
 
-for _hotkey, _fn in pairs(hyperfns) do
-    hs.hotkey.bind(HYPER, _hotkey, _fn)
-end
+for _hotkey, _fn in pairs(hyperfns) do hs.hotkey.bind(HYPER, _hotkey, _fn) end
 
 -- -- hyper minus shift keybind
 -- hs.hotkey.bind(HYPER_MINUS_SHIFT, 'C', caffeine.clicked)
@@ -96,15 +108,16 @@ end
 -- hs.hotkey.bind('cmd', 'return', function() hs.window.focusedWindow():toggleFullScreen() end)
 
 -- Spotlight-like Google search
-chooser = hs.chooser.new(function(args)
-    os.execute(string.format("open %s", args.subText))
-end)
+chooser = hs.chooser.new(function(args) os.execute(string.format("open %s", args.subText)) end)
 chooser:queryChangedCallback(function(query)
     query = query:gsub(" ", "+")
     chooser:choices({
         {
-           ["text"] = string.format("Search Google for `%s`", query),
-            ["subText"] = string.format("https://www.google.com/search?q=%s", utils.urlencode(query)),
+            ["text"] = string.format("Search Google for `%s`", query),
+            ["subText"] = string.format(
+                "https://www.google.com/search?q=%s",
+                utils.urlencode(query)
+            ),
         },
         -- {
         --     ["text"] = string.format("Search Google Finance for `%s`", query),
@@ -121,15 +134,19 @@ chooser:bgDark(true)
 chooser:rows(1)
 lastFocus = nil
 -- hs.hotkey.bind({"cmd"}, "space", function()
-hs.hotkey.bind(HYPER, "space", function()
-    if chooser:isVisible() then
-        chooser:hide()
-        lastFocus:focus()
-    else
-        lastFocus = hs.window.focusedWindow()
-        chooser:show()
+hs.hotkey.bind(
+    HYPER,
+    "space",
+    function()
+        if chooser:isVisible() then
+            chooser:hide()
+            lastFocus:focus()
+        else
+            lastFocus = hs.window.focusedWindow()
+            chooser:show()
+        end
     end
-end)
+)
 
 -- -- Keyboard Settting
 -- ---- general setting
@@ -197,6 +214,6 @@ end)
 -- hs.alert.show("Hammerspoon Loaded")
 -- Finally, show a notification that we finished loading the config successfully
 hs.notify.new({
-      title='Hammerspoon',
-        informativeText='Config loaded'
-    }):send()
+    title = 'Hammerspoon',
+    informativeText = 'Config loaded'
+}):send()
