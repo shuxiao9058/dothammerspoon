@@ -1,3 +1,125 @@
+hs.logger.defaultLogLevel = "info"
+
+-- Hotkey definitions
+local HYPER = {"ctrl", "alt", "cmd", "shift"}
+local HYPER_MINUS_SHIFT = {"ctrl", "alt", "cmd"}
+
+hs.loadSpoon("SpoonInstall")
+spoon.SpoonInstall.use_syncinstall = true
+Install = spoon.SpoonInstall
+
+local caffeine = hs.loadSpoon("Caffeine")
+caffeine.hotkeyToggle = hs.hotkey.new(HYPER, "C", function()
+    caffeine:clicked()
+end)
+caffeine:start()
+
+local seal = hs.loadSpoon('Seal')
+
+seal:loadPlugins({
+    "apps",
+    "useractions",
+    'tunnelblick',
+    'network_locations',
+    -- 'snippets',
+    'macos',
+    'hammerspoon'
+})
+
+seal:bindHotkeys({toggle = {HYPER, 'space'}})
+
+-- -- local seal = spoon.Seal
+-- seal.plugins.useractions.actions = {
+--     ["rebootmac"] = {
+--         fn = hs.caffeinate.restartSystem,
+--         -- hotkey = { hyper2, "r" },
+--         keyword = "restart",
+--         -- icon = swisscom_logo,
+--     },
+--     ["shutdownmac"] = {
+--         fn = hs.caffeinate.shutdownSystem,
+--         -- hotkey = { hyper2, "r" },
+--         keyword = "shutdown",
+--     },
+--     ["haltmac"] = {
+--         fn = hs.caffeinate.shutdownSystem,
+--         -- hotkey = { hyper2, "r" },
+--         keyword = "halt",
+--     },
+--     ["lockmac"] = {
+--         fn = hs.caffeinate.lockScreen,
+--         -- hotkey = { hyper2, "r" },
+--         keyword = "lock",
+--     },
+-- }
+
+seal:refreshAllCommands()
+seal:start()
+
+-- -- Install:andUse(
+-- --     "Caffeine",
+-- --     {hotkeys = {toggle = {HYPER, "C"}}, start = true}
+-- -- )
+
+-- Disable window size transition animations
+hs.window.animationDuration = 0.0
+-- Install:andUse(
+--     "MiroWindowsManager",
+--     {
+--         hotkeys = {
+--             up = {HYPER, "k"},
+--             right = {HYPER, "l"},
+--             down = {HYPER, "j"},
+--             left = {HYPER, "h"},
+--             fullscreen = {HYPER, "m"}
+--         }
+--     }
+-- )
+
+-- Install:andUse(
+--     "TextClipboardHistory",
+--     {
+--         config = {show_in_menubar = false},
+--         hotkeys = {toggle_clipboard = {HYPER, "v"}},
+--         start = true
+--     }
+-- )
+
+local clock = hs.loadSpoon("AClock")
+clock.format = "%H:%M:%S"
+clock.textColor = {hex = "#00c403"}
+clock.textFont = "Menlo Bold"
+clock.height = 160
+clock.width = 675
+clock:init()
+
+-- -- FadeLogo is last to ensure that it confirms hammerspoon has fully loaded successfully
+-- Install:andUse(
+--     "FadeLogo",
+--     {
+--         config = {fade_in_time = 0, run_time = 0, fade_out_time = 0.4},
+--         start = true
+--     }
+-- )
+
+-- hs.loadSpoon("Caffeine")
+-- spoon.Caffeine:bindHotkeys({toggle = {HYPER, "C"},})
+-- spoon.Caffeine:start()
+
+-- hs.loadSpoon("Caffeine")
+-- spoon.Caffeine:bindHotkeys({toggle = {{"⌥", "⌃", "⇧"}, "c"}})
+-- spoon.Caffeine:start()
+-- -- -- Turn off Caffeine if screen is locked or system sent to sleep
+-- -- init.caffeine_screen_lock_watcher = hs.caffeinate.watcher.new(function(event)
+-- --     if spoon.Caffeine and (event == hs.caffeinate.watcher["screensDidLock"] or event == hs.caffeinate.watcher["systemWillSleep"]) then
+
+-- --         if hs.caffeinate.get("displayIdle") then
+-- --             spoon.Caffeine.clicked()
+-- --             logger.i(hs.caffeinate.watcher[event] .. " and spoon.Caffeine on; turning it off")
+-- --         end
+-- --     end
+-- -- end):start()
+
 -- http://www.hammerspoon.org/go/#winresize
 -- hammerspoon 不能实现的区分左右cmd shift等，也不能实别Fn键，
 -- 这些可以与karabiner 通过Hammerspoon with URLs实现通信,即，
@@ -28,7 +150,7 @@ local wifi = require "wifi"
 mouseCircle = require("mouseCircle"):start()
 
 -- Replace Caffeine.app with 18 lines of Lua :D
-caffeine = require("caffeine"):start()
+-- caffeine = require("caffeine"):start()
 
 hs.hotkey.alertDuration = 0
 
@@ -37,10 +159,6 @@ hs.application.enableSpotlightForNameSearches(true)
 -- Turn off Animations.
 --
 hs.window.animationDuration = 0
-
--- Hotkey definitions
-local HYPER = {"ctrl", "alt", "cmd", "shift"}
-local HYPER_MINUS_SHIFT = {"ctrl", "alt", "cmd"}
 
 -- set the keyboard layout to Dvorak
 -- hs.keycodes.setLayout("Dvorak")
@@ -52,9 +170,10 @@ hyperfns = {}
 hyperfns[','] = flux.decreaseLevel
 hyperfns['.'] = flux.increaseLevel
 -- Lock System
-hyperfns['L'] = function() hs.caffeinate.lockScreen() end
+
+-- hyperfns['L'] = function() hs.caffeinate.lockScreen() end
 -- Sleep system
-hyperfns['S'] = function() hs.caffeinate.systemSleep() end
+-- hyperfns['S'] = function() hs.caffeinate.systemSleep() end
 -- hyperfns['C'] = caffeine.clicked
 -- Window Hints
 hyperfns['U'] = hs.hints.windowHints
@@ -62,158 +181,74 @@ hyperfns['U'] = hs.hints.windowHints
 -- Application hotkeys
 -- hyperfns['I'] = function() utils.toggle_application("iTerm2") end
 -- hyperfns['G'] = function() utils.toggle_application("Google Chrome") end
-hyperfns['I'] = function() utils.toggleApp("com.googlecode.iterm2") end
-hyperfns['G'] = function() utils.toggleApp("com.google.Chrome") end
+hyperfns['I'] = function()
+    utils.toggleApp("com.googlecode.iterm2")
+end
+hyperfns['G'] = function()
+    utils.toggleApp("com.google.Chrome")
+end
 -- hyperfns['W'] = function() utils.toggleApp("com.tencent.xinWeChat") end
-hyperfns['E'] = function() utils.toggleEmacs() end
-hyperfns['F'] = function() utils.toggleFinder() end
+hyperfns['E'] = function()
+    utils.toggleEmacs()
+end
+hyperfns['F'] = function()
+    utils.toggleFinder()
+end
 -- hyperfns['M'] = function() mouseCircle:show() end
-hyperfns['M'] = function() utils.toggleMaximized() end
+hyperfns['M'] = function()
+    utils.toggleMaximized()
+end
 -- hs.hotkey.bind(hyper, "M", toggleMaximized)
 
 -- switch
 hyperfns['-'] = wifi.toggleWifi
-hyperfns['C'] = caffeine.clicked
+-- hyperfns['C'] = caffeine.clicked
 -- hs.hotkey.bind(HYPER_MINUS_SHIFT, 'C', caffeine.clicked)
 
 hs.urlevent.bind(
     "toggleChrome",
-    function(eventName, params) utils.toggleApp("com.google.Chrome") end
+    function(eventName, params)
+        utils.toggleApp("com.google.Chrome")
+    end
 )
 hs.urlevent.bind(
     "toggleSafari",
-    function(eventName, params) utils.toggleApp("com.apple.Safari") end
+    function(eventName, params)
+        utils.toggleApp("com.apple.Safari")
+    end
 )
 hs.urlevent.bind(
     "toggleIterm2",
-    function(eventName, params) utils.toggleApp("com.googlecode.iterm2") end
+    function(eventName, params)
+        utils.toggleApp("com.googlecode.iterm2")
+    end
 )
+
 -- open -g "hammerspoon://toggleEmacs"
 hs.urlevent.bind(
     "toggleEmacs",
-    function(eventName, params) utils.toggleEmacs() end
+    function(eventName, params)
+        utils.toggleEmacs()
+    end
 )
+
 -- open -g "hammerspoon://toggleFinder"
 hs.urlevent.bind(
     "toggleFinder",
-    function(eventName, params) utils.toggleFinder() end
+    function(eventName, params)
+        utils.toggleFinder()
+    end
 )
 
-for _hotkey, _fn in pairs(hyperfns) do hs.hotkey.bind(HYPER, _hotkey, _fn) end
+for _hotkey, _fn in pairs(hyperfns) do
+    hs.hotkey.bind(HYPER, _hotkey, _fn)
+end
 
 -- -- hyper minus shift keybind
 -- hs.hotkey.bind(HYPER_MINUS_SHIFT, 'C', caffeine.clicked)
 
--- all APP fullscreen with 'Command+Return'
--- hs.hotkey.bind('cmd', 'return', function() hs.window.focusedWindow():toggleFullScreen() end)
-
--- Spotlight-like Google search
-chooser = hs.chooser.new(function(args) os.execute(string.format("open %s", args.subText)) end)
-chooser:queryChangedCallback(function(query)
-    query = query:gsub(" ", "+")
-    chooser:choices({
-        {
-            ["text"] = string.format("Search Google for `%s`", query),
-            ["subText"] = string.format(
-                "https://www.google.com/search?q=%s",
-                utils.urlencode(query)
-            ),
-        },
-        -- {
-        --     ["text"] = string.format("Search Google Finance for `%s`", query),
-        --     ["subText"] = string.format("https://www.google.com/finance?q=%s", utils.urlencode(query)),
-        -- },
-        -- {
-        --     ["text"] = string.format("Open subreddit `%s`", query),
-        --     ["subText"] = string.format("https://www.reddit.com/r/%s", utils.urlencode(query)),
-        -- },
-    })
-end)
-
-chooser:bgDark(true)
-chooser:rows(1)
-lastFocus = nil
--- hs.hotkey.bind({"cmd"}, "space", function()
-hs.hotkey.bind(
-    HYPER,
-    "space",
-    function()
-        if chooser:isVisible() then
-            chooser:hide()
-            lastFocus:focus()
-        else
-            lastFocus = hs.window.focusedWindow()
-            chooser:show()
-        end
-    end
-)
-
--- -- Keyboard Settting
--- ---- general setting
--- ------- caps to ctrl and esc
--- sendESC = true
--- maxFlag = 0
--- controlKeyTimer =
--- hs.timer.delayed.new(0.15, function() sendESC = false end)
-
--- controlHandler = function(evt)
---     local newMods = evt:getFlags()
---     local count = 0
---     for _ in pairs(newMods) do
---         count = count + 1
---     end
---     if maxFlag < count then maxFlag = count end
---     if  1 == maxFlag and newMods["ctrl"] then
---         sendESC = true
---         controlKeyTimer:start()
---         return true
---     end
---     if 0 == count then
---         if 1 == maxFlag and sendESC then
---             hs.eventtap.keyStroke({}, "ESCAPE", 5)
---             sendESC = false
---             maxFlag = 0
---             controlKeyTimer:stop()
---             return true
---         end
---         sendESC = false
---         maxFlag = 0
---     end
---     return false
--- end
--- controlTap = hs.eventtap.new(
---     {hs.eventtap.event.types.flagsChanged}, controlHandler)
--- controlTap:start()
--- -- end caps to ctrl and esc
-
--- -- Reload config
--- function reloadConfig(paths)
---     doReload = false
---     for _,file in pairs(paths) do
---         if file:sub(-4) == ".lua" then
---             print("A lua file changed, doing reload")
---             doReload = true
---         end
---     end
---     if not doReload then
---         print("No lua file changed, skipping reload")
---         return
---     end
-
---     hs.reload()
--- end
-
--- Automatically reload Hammerspoon config
--- configFileWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig)
--- configFileWatcher:start()
-
--- hs.hotkey.bind(HYPER, 'R',  function()
---       hs.reload()
--- end)
-
--- hs.alert.show("Hammerspoon Loaded")
--- Finally, show a notification that we finished loading the config successfully
-hs.notify.new({
-    title = 'Hammerspoon',
-    informativeText = 'Config loaded'
-}):send()
+-- -- Finally, show a notification that we finished loading the config successfully
+-- hs.notify.new({
+--     title = 'Hammerspoon',
+--     informativeText = 'Config loaded'
+-- }):send()
