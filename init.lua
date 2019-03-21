@@ -56,11 +56,6 @@ seal:bindHotkeys({toggle = {HYPER, 'space'}})
 seal:refreshAllCommands()
 seal:start()
 
--- -- Install:andUse(
--- --     "Caffeine",
--- --     {hotkeys = {toggle = {HYPER, "C"}}, start = true}
--- -- )
-
 -- Disable window size transition animations
 hs.window.animationDuration = 0.0
 -- Install:andUse(
