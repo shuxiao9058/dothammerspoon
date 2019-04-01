@@ -1,17 +1,12 @@
-hs.logger.defaultLogLevel = "info"
+-- hs.logger.defaultLogLevel = "info"
+local logger = hs.logger.new("init", "debug")
 
 -- Hotkey definitions
 local HYPER = {"ctrl", "alt", "cmd", "shift"}
 local HYPER_MINUS_SHIFT = {"ctrl", "alt", "cmd"}
 
-hs.loadSpoon("SpoonInstall")
-spoon.SpoonInstall.use_syncinstall = true
-Install = spoon.SpoonInstall
-
 local caffeine = hs.loadSpoon("Caffeine")
-caffeine.hotkeyToggle = hs.hotkey.new(HYPER, "C", function()
-    caffeine:clicked()
-end)
+caffeine:bindHotkeys({toggle = {HYPER, "C"},})
 caffeine:start()
 
 local seal = hs.loadSpoon('Seal')
@@ -88,7 +83,7 @@ clock.height = 160
 clock.width = 675
 clock:init()
 
--- -- FadeLogo is last to ensure that it confirms hammerspoon has fully loaded successfully
+-- clock. -- -- FadeLogo is last to ensure that it confirms hammerspoon has fully loaded successfully
 -- Install:andUse(
 --     "FadeLogo",
 --     {
@@ -96,25 +91,21 @@ clock:init()
 --         start = true
 --     }
 -- )
-
 -- hs.loadSpoon("Caffeine")
 -- spoon.Caffeine:bindHotkeys({toggle = {HYPER, "C"},})
 -- spoon.Caffeine:start()
-
 -- hs.loadSpoon("Caffeine")
 -- spoon.Caffeine:bindHotkeys({toggle = {{"⌥", "⌃", "⇧"}, "c"}})
 -- spoon.Caffeine:start()
 -- -- -- Turn off Caffeine if screen is locked or system sent to sleep
 -- -- init.caffeine_screen_lock_watcher = hs.caffeinate.watcher.new(function(event)
 -- --     if spoon.Caffeine and (event == hs.caffeinate.watcher["screensDidLock"] or event == hs.caffeinate.watcher["systemWillSleep"]) then
-
 -- --         if hs.caffeinate.get("displayIdle") then
 -- --             spoon.Caffeine.clicked()
 -- --             logger.i(hs.caffeinate.watcher[event] .. " and spoon.Caffeine on; turning it off")
 -- --         end
 -- --     end
 -- -- end):start()
-
 -- http://www.hammerspoon.org/go/#winresize
 -- hammerspoon 不能实现的区分左右cmd shift等，也不能实别Fn键，
 -- 这些可以与karabiner 通过Hammerspoon with URLs实现通信,即，
