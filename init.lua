@@ -132,9 +132,6 @@ hs.application.enableSpotlightForNameSearches(true)
 --
 hs.window.animationDuration = 0
 
--- set the keyboard layout to Dvorak
--- hs.keycodes.setLayout("Dvorak")
-
 -- And now for hotkeys relating to Hyper. First, let's capture all of the functions, then we can just quickly iterate and bind them
 hyperfns = {}
 
@@ -143,10 +140,6 @@ hyperfns = {}
 -- hyperfns['.'] = flux.increaseLevel
 -- -- Lock System
 
--- hyperfns['L'] = function() hs.caffeinate.lockScreen() end
--- Sleep system
--- hyperfns['S'] = function() hs.caffeinate.systemSleep() end
--- hyperfns['C'] = caffeine.clicked
 -- Window Hints
 hyperfns['U'] = hs.hints.windowHints
 
@@ -164,8 +157,6 @@ hyperfns['M'] = function() utils.toggleMaximized() end
 
 -- switch
 hyperfns['-'] = wifi.toggleWifi
--- hyperfns['C'] = caffeine.clicked
--- hs.hotkey.bind(HYPER_MINUS_SHIFT, 'C', caffeine.clicked)
 
 hs.urlevent.bind("toggleChrome",
                  function(eventName, params) utils.toggleApp("com.google.Chrome") end)
@@ -175,10 +166,6 @@ hs.urlevent.bind("toggleIterm2",
                  function(eventName, params)
     utils.toggleApp("com.googlecode.iterm2")
 end)
-
--- open -g "hammerspoon://toggleEmacs"
-hs.urlevent.bind("toggleEmacs",
-                 function(eventName, params) utils.toggleEmacs() end)
 
 -- Key to launch application.
 local key2App = {
@@ -232,8 +219,9 @@ hs.hotkey.bind(HYPER, "z", showAppKeystroke)
 
 -- Maximize window when specify application started.
 local maximizeApps = {
-    "/Applications/iTerm.app", "/Applications/Google Chrome.app",
-    "/System/Library/CoreServices/Finder.app"
+    "/Applications/iTerm.app"
+    -- "/Applications/Google Chrome.app"
+    -- "/System/Library/CoreServices/Finder.app"
 }
 
 local windowCreateFilter = hs.window.filter.new():setDefaultFilter()
@@ -249,7 +237,7 @@ end)
 
 -- Manage application's inputmethod status.
 local function Chinese()
-    hs.keycodes.currentSourceID("com.sogou.inputmethod.sogou.pinyin")
+    hs.keycodes.currentSourceID("im.rime.inputmethod.Squirrel")
 end
 
 local function English() hs.keycodes.currentSourceID("com.apple.keylayout.ABC") end
@@ -294,10 +282,6 @@ function updateFocusAppInputMethod()
     end
 end
 
--- open -g "hammerspoon://toggleFinder"
-hs.urlevent.bind("toggleFinder",
-                 function(eventName, params) utils.toggleFinder() end)
-
 for _hotkey, _fn in pairs(hyperfns) do hs.hotkey.bind(HYPER, _hotkey, _fn) end
 
 -- Display Hammerspoon logo
@@ -307,11 +291,3 @@ spoon.FadeLogo.image_size = hs.geometry.size(80, 80)
 spoon.FadeLogo.run_time = 1.5
 spoon.FadeLogo:start()
 
--- -- hyper minus shift keybind
--- hs.hotkey.bind(HYPER_MINUS_SHIFT, 'C', caffeine.clicked)
-
--- -- Finally, show a notification that we finished loading the config successfully
--- hs.notify.new({
---     title = 'Hammerspoon',
---     informativeText = 'Config loaded'
--- }):send()
