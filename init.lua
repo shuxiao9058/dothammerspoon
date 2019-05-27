@@ -1,5 +1,7 @@
 -- hs.logger.defaultLogLevel = "info"
 -- Logger setup
+require('functions')
+
 hs.logger.setGlobalLogLevel('warning')
 hs.logger.defaultLogLevel = 'warning'
 logger = hs.logger.new('Init')
@@ -224,63 +226,126 @@ local maximizeApps = {
     -- "/System/Library/CoreServices/Finder.app"
 }
 
-local windowCreateFilter = hs.window.filter.new():setDefaultFilter()
-windowCreateFilter:subscribe(hs.window.filter.windowCreated,
-                             function(win, ttl, last)
-    for index, value in ipairs(maximizeApps) do
-        if win:application():path() == value then
-            win:maximize()
-            return true
-        end
-    end
-end)
+-- local windowCreateFilter = hs.window.filter.new():setDefaultFilter()
+-- windowCreateFilter:subscribe(hs.window.filter.windowCreated,
+--                              function(win, ttl, last)
+--     for index, value in ipairs(maximizeApps) do
+--         if win:application():path() == value then
+--             win:maximize()
+--             return true
+--         end
+--     end
+-- end)
 
--- Manage application's inputmethod status.
-local function Chinese()
-    hs.keycodes.currentSourceID("im.rime.inputmethod.Squirrel")
-end
+-- -- Manage application's inputmethod status.
+-- local function Chinese()
+--     -- hs.keycodes.currentSourceID("im.rime.inputmethod.Squirrel")
+--     hs.keycodes.setMethod('Squirrel')
+-- end
 
-local function English() hs.keycodes.currentSourceID("com.apple.keylayout.ABC") end
+-- local function English() -- hs.keycodes.currentSourceID("com.apple.keylayout.ABC")
+--     hs.keycodes.setLayout('U.S.')
+-- end
 
--- Build better app switcher.
-switcher = hs.window.switcher.new(hs.window.filter.new():setAppFilter('Emacs',
-                                                                      {
-    allowRoles = '*',
-    allowTitles = 1
-}), -- make emacs window show in switcher list
-{
-    showTitles = false, -- don't show window title
-    thumbnailSize = 200, -- window thumbnail size
-    showSelectedThumbnail = false, -- don't show bigger thumbnail
-    backgroundColor = {0, 0, 0, 0.8}, -- background color
-    highlightColor = {0.3, 0.3, 0.3, 0.8} -- selected color
-})
+-- -- Build better app switcher.
+-- switcher = hs.window.switcher.new(hs.window.filter.new():setAppFilter('Emacs',
+--                                                                       {
+--     allowRoles = '*',
+--     allowTitles = 1
+-- }), -- make emacs window show in switcher list
+-- {
+--     showTitles = false, -- don't show window title
+--     thumbnailSize = 200, -- window thumbnail size
+--     showSelectedThumbnail = false, -- don't show bigger thumbnail
+--     backgroundColor = {0, 0, 0, 0.8}, -- background color
+--     highlightColor = {0.3, 0.3, 0.3, 0.8} -- selected color
+-- })
 
-hs.hotkey.bind("alt", "tab", function()
-    switcher:next()
-    updateFocusAppInputMethod()
-end)
-hs.hotkey.bind("alt-shift", "tab", function()
-    switcher:previous()
-    updateFocusAppInputMethod()
-end)
+-- hs.hotkey.bind("alt", "tab", function()
+--     switcher:next()
+--     updateFocusAppInputMethod()
+-- end)
+-- hs.hotkey.bind("alt-shift", "tab", function()
+--     switcher:previous()
+--     updateFocusAppInputMethod()
+-- end)
 
-function updateFocusAppInputMethod()
-    for key, app in pairs(key2App) do
-        local appPath = app[1]
-        local inputmethod = app[2]
+-- function updateFocusAppInputMethod()
+--     for key, app in pairs(key2App) do
+--         local appPath = app[1]
+--         local inputmethod = app[2]
 
-        if window.focusedWindow():application():path() == appPath then
-            if inputmethod == 'English' then
-                English()
-            else
-                Chinese()
+--         if window.focusedWindow():application():path() == appPath then
+--             if inputmethod == 'English' then
+--                 English()
+--             else
+--                 Chinese()
+--             end
+
+--             break
+--         end
+--     end
+-- end
+
+-- local function Chinese() hs.keycodes.setMethod('Squirrel') end
+-- local function English() hs.keycodes.setLayout('U.S.') end
+
+-- local appInputMethod = {
+--     Hammerspoon             = English,
+--     Emacs                   = English,
+--     iTerm2                  = English,
+--     ['Sublime Text']        = English,
+--     Dash                    = English,
+--     Safari                  = English,
+--     WeChat                  = Chinese,
+--     QQ                      = Chinese,
+--     AliWangwang             = Chinese
+-- }
+
+-- return hs.application.watcher.new(function(appName, eventType, appObject)
+--   if (eventType == hs.application.watcher.activated) then
+--     if (appName == 'Finder') then
+--       -- Bring all Finder windows forward when one gets activated
+--       appObject:selectMenuItem({'Window', 'Bring All to Front'})
+--     end
+
+--     for app, fn in pairs(appInputMethod) do
+--       if app == appName then
+--         fn()
+--       end
+--     end
+--   end
+-- end)
+
+-- auto change the im for the application callback
+-- https://github.com/sjkyspa/env/commit/37545c53186a7be586d7c1878067c247d3b5716c
+apps = {
+    {name = 'Emacs', im = 'EN'}, {name = 'iTerm2', im = 'EN'},
+    {name = 'Google Chrome', im = 'EN'}, {name = 'Wechat', im = 'CN'},
+    {name = 'OmniFocus', im = 'CN'}
+}
+
+function ims(name, etype, app)
+    if (etype == hs.application.watcher.activated) then
+        config = filter(function(item)
+            return string.match(name:lower(), item.name:lower())
+        end, apps)
+
+        if next(config) == nil then
+        else
+            local current = hs.keycodes.currentMethod()
+            if (current == nil and string.match(config[1].im, "CN")) then
+                hs.keycodes.setMethod("Squirrel")
+            elseif (current ~= nil and string.match(config[1].im, "EN")) then
+                hs.keycodes.setLayout("U.S.")
             end
-
-            break
         end
     end
 end
+
+-- auto change the im for the application
+imWatcher = hs.application.watcher.new(ims)
+imWatcher:start()
 
 for _hotkey, _fn in pairs(hyperfns) do hs.hotkey.bind(HYPER, _hotkey, _fn) end
 
