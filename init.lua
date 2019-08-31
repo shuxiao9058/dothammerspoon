@@ -49,6 +49,9 @@ local caffeine = hs.loadSpoon("Caffeine")
 caffeine:bindHotkeys({toggle = {HYPER, "C"}})
 caffeine:start()
 
+
+hs.loadSpoon('ControlEscape'):start() -- Load Hammerspoon bits from https://github.com/jasonrudolph/ControlEscape.spoon"
+
 -- ---------------
 -- Global Bindings
 -- ---------------
@@ -148,12 +151,11 @@ hyperfns['U'] = hs.hints.windowHints
 -- Application hotkeys
 -- hyperfns['I'] = function() utils.toggle_application("iTerm2") end
 -- hyperfns['G'] = function() utils.toggle_application("Google Chrome") end
-hyperfns['I'] = function() utils.toggleApp("com.googlecode.iterm2") end
-hyperfns['G'] = function() utils.toggleApp("com.google.Chrome") end
+-- hyperfns['I'] = function() utils.toggleApp("com.googlecode.iterm2") end
+-- hyperfns['G'] = function() utils.toggleApp("com.google.Chrome") end
 -- hyperfns['W'] = function() utils.toggleApp("com.tencent.xinWeChat") end
-hyperfns['E'] = function() utils.toggleEmacs() end
+-- hyperfns['E'] = function() utils.toggleEmacs() end
 hyperfns['F'] = function() utils.toggleFinder() end
--- hyperfns['M'] = function() mouseCircle:show() end
 hyperfns['M'] = function() utils.toggleMaximized() end
 -- hs.hotkey.bind(hyper, "M", toggleMaximized)
 
@@ -355,4 +357,3 @@ spoon.FadeLogo.zoom = false
 spoon.FadeLogo.image_size = hs.geometry.size(80, 80)
 spoon.FadeLogo.run_time = 1.5
 spoon.FadeLogo:start()
-
