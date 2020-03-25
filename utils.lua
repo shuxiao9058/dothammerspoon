@@ -133,13 +133,28 @@ function utils.toggleApp(appBundleID)
 end
 
 function utils.toggleEmacs()
+    local windows = hs.window.allWindows()
+    local emacsWindow = nil
+    local emacsApplicationName = "Emacs"
+    for i, window in ipairs(windows) do
+        local application = window:application()
+        local applicationName = application:name()
+        if applicationName == emacsApplicationName then
+            emacsWindow = window
+        end
+        -- logger.d(applicationName)
+    end
+
     local window = hs.window.focusedWindow()
     local application = window:application()
     local focused = application:name() == "Emacs"
-
     if not focused then
-        hs.execute("open /usr/local/opt/emacs-mac/Emacs.app")
-        -- hs.timer.doAfter(1, function() windowLeft() end)
+        if not emacsWindow then
+            hs.notify.show('Please run Emacs first', 'Emacs is not runnint now',
+                           '')
+        else
+            emacsWindow:focus()
+        end
     else
         application:hide()
     end

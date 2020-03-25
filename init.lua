@@ -49,6 +49,9 @@ local caffeine = hs.loadSpoon("Caffeine")
 caffeine:bindHotkeys({toggle = {HYPER, "C"}})
 caffeine:start()
 
+-- caffeine default on
+caffeine:setDisplay(true)
+
 hs.loadSpoon('ControlEscape'):start() -- Load Hammerspoon bits from https://github.com/jasonrudolph/ControlEscape.spoon"
 
 -- ---------------
