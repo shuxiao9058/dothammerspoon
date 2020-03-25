@@ -2,9 +2,9 @@
 -- Logger setup
 require('functions')
 
-hs.logger.setGlobalLogLevel('warning')
-hs.logger.defaultLogLevel = 'warning'
-logger = hs.logger.new('Init')
+hs.logger.setGlobalLogLevel('verbose')
+-- hs.logger.defaultLogLevel = 'warning'
+logger = hs.logger.new('Init', 'verbose')
 hs.console.clearConsole()
 -- local logger = hs.logger.new("init", "debug")
 
@@ -49,7 +49,6 @@ local caffeine = hs.loadSpoon("Caffeine")
 caffeine:bindHotkeys({toggle = {HYPER, "C"}})
 caffeine:start()
 
-
 hs.loadSpoon('ControlEscape'):start() -- Load Hammerspoon bits from https://github.com/jasonrudolph/ControlEscape.spoon"
 
 -- ---------------
@@ -57,42 +56,42 @@ hs.loadSpoon('ControlEscape'):start() -- Load Hammerspoon bits from https://gith
 -- ---------------
 hs.hotkey.bind(HYPER, 'L', 'Lock', hs.caffeinate.lockScreen)
 
-local seal = hs.loadSpoon('Seal')
+-- local seal = hs.loadSpoon('Seal')
 
-seal:loadPlugins({
-    "apps", "useractions", 'tunnelblick', 'network_locations', -- 'snippets',
-    'macos', 'hammerspoon'
-})
+-- seal:loadPlugins({
+--     "apps", "useractions", 'tunnelblick', 'network_locations', -- 'snippets',
+--     'macos', 'hammerspoon'
+-- })
 
-seal:bindHotkeys({toggle = {HYPER, 'space'}})
+-- -- seal:bindHotkeys({toggle = {HYPER, 'space'}})
 
--- local seal = spoon.Seal
-seal.plugins.useractions.actions = {
-    ["rebootmac"] = {
-        fn = hs.caffeinate.restartSystem,
-        -- hotkey = { hyper2, "r" },
-        keyword = "restart"
-        -- icon = swisscom_logo,
-    },
-    ["shutdownmac"] = {
-        fn = hs.caffeinate.shutdownSystem,
-        -- hotkey = { hyper2, "r" },
-        keyword = "shutdown"
-    },
-    ["haltmac"] = {
-        fn = hs.caffeinate.shutdownSystem,
-        -- hotkey = { hyper2, "r" },
-        keyword = "halt"
-    },
-    ["lockmac"] = {
-        fn = hs.caffeinate.lockScreen,
-        -- hotkey = { hyper2, "r" },
-        keyword = "lock"
-    }
-}
+-- -- local seal = spoon.Seal
+-- seal.plugins.useractions.actions = {
+--     ["rebootmac"] = {
+--         fn = hs.caffeinate.restartSystem,
+--         -- hotkey = { hyper2, "r" },
+--         keyword = "restart"
+--         -- icon = swisscom_logo,
+--     },
+--     ["shutdownmac"] = {
+--         fn = hs.caffeinate.shutdownSystem,
+--         -- hotkey = { hyper2, "r" },
+--         keyword = "shutdown"
+--     },
+--     ["haltmac"] = {
+--         fn = hs.caffeinate.shutdownSystem,
+--         -- hotkey = { hyper2, "r" },
+--         keyword = "halt"
+--     },
+--     ["lockmac"] = {
+--         fn = hs.caffeinate.lockScreen,
+--         -- hotkey = { hyper2, "r" },
+--         keyword = "lock"
+--     }
+-- }
 
-seal:refreshAllCommands()
-seal:start()
+-- seal:refreshAllCommands()
+-- seal:start()
 
 -- Disable window size transition animations
 hs.window.animationDuration = 0.3
@@ -138,7 +137,7 @@ hs.application.enableSpotlightForNameSearches(true)
 hs.window.animationDuration = 0
 
 -- And now for hotkeys relating to Hyper. First, let's capture all of the functions, then we can just quickly iterate and bind them
-hyperfns = {}
+local hyperfns = {}
 
 -- -- Increase / decrease flux intensity.
 -- hyperfns[','] = flux.decreaseLevel
@@ -154,20 +153,27 @@ hyperfns['U'] = hs.hints.windowHints
 -- hyperfns['I'] = function() utils.toggleApp("com.googlecode.iterm2") end
 -- hyperfns['G'] = function() utils.toggleApp("com.google.Chrome") end
 -- hyperfns['W'] = function() utils.toggleApp("com.tencent.xinWeChat") end
--- hyperfns['E'] = function() utils.toggleEmacs() end
-hyperfns['F'] = function() utils.toggleFinder() end
-hyperfns['M'] = function() utils.toggleMaximized() end
+hyperfns['E'] = function()
+    utils.toggleEmacs()
+end
+hyperfns['F'] = function()
+    utils.toggleFinder()
+end
+hyperfns['M'] = function()
+    utils.toggleMaximized()
+end
 -- hs.hotkey.bind(hyper, "M", toggleMaximized)
 
 -- switch
 hyperfns['-'] = wifi.toggleWifi
 
-hs.urlevent.bind("toggleChrome",
-                 function(eventName, params) utils.toggleApp("com.google.Chrome") end)
-hs.urlevent.bind("toggleSafari",
-                 function(eventName, params) utils.toggleApp("com.apple.Safari") end)
-hs.urlevent.bind("toggleIterm2",
-                 function(eventName, params)
+hs.urlevent.bind("toggleChrome", function(eventName, params)
+    utils.toggleApp("com.google.Chrome")
+end)
+hs.urlevent.bind("toggleSafari", function(eventName, params)
+    utils.toggleApp("com.apple.Safari")
+end)
+hs.urlevent.bind("toggleIterm2", function(eventName, params)
     utils.toggleApp("com.googlecode.iterm2")
 end)
 
@@ -185,6 +191,7 @@ local key2App = {
     d = {'/Applications/Dash.app', 'English', 1},
     b = {'/Applications/MindNode.app', 'Chinese', 1},
     p = {'/Applications/Preview.app', 'Chinese', 2},
+    t = {'/Applications/Telegram.app', 'Chinese', 1},
     a = {'/Applications/wechatwebdevtools.app', 'English', 2},
     m = {'/Applications/Sketch.app', 'English', 2}
 }
@@ -218,12 +225,18 @@ local function showAppKeystroke()
         showAppKeystrokeAlertId = ""
     end
 end
+hyperfns['z'] = showAppKeystroke
 
-hs.hotkey.bind(HYPER, "z", showAppKeystroke)
+-- hs.hotkey.bind(HYPER, "z", showAppKeystroke)
+
+for _hotkey, _fn in pairs(hyperfns) do
+    logger.d('bind key')
+    hs.hotkey.bind(HYPER, _hotkey, _fn)
+end
 
 -- Maximize window when specify application started.
 local maximizeApps = {
-    "/Applications/iTerm.app"
+    "/Applications/iTerm.app", "/usr/local/opt/emacs-mac/Emacs.app"
     -- "/Applications/Google Chrome.app"
     -- "/System/Library/CoreServices/Finder.app"
 }
@@ -231,7 +244,7 @@ local maximizeApps = {
 -- local windowCreateFilter = hs.window.filter.new():setDefaultFilter()
 -- windowCreateFilter:subscribe(hs.window.filter.windowCreated,
 --                              function(win, ttl, last)
---     for index, value in ipairs(maximizeApps) do
+--     for index, value in ipairs(maximizeApps) doJ∆
 --         if win:application():path() == value then
 --             win:maximize()
 --             return true
@@ -348,8 +361,6 @@ end
 -- auto change the im for the application
 imWatcher = hs.application.watcher.new(ims)
 imWatcher:start()
-
-for _hotkey, _fn in pairs(hyperfns) do hs.hotkey.bind(HYPER, _hotkey, _fn) end
 
 -- Display Hammerspoon logo
 hs.loadSpoon('FadeLogo')
