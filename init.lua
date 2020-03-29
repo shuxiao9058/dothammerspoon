@@ -2,16 +2,13 @@
 -- Logger setup
 require('functions')
 
-
-
-hs.logger.setGlobalLogLevel('verbose')
+hs.logger.setGlobalLogLevel('debug')
 -- hs.logger.defaultLogLevel = 'warning'
-logger = hs.logger.new('Init', 'verbose')
+logger = hs.logger.new('Init', 'debug')
 hs.console.clearConsole()
 -- local logger = hs.logger.new("init", "debug")
 
 require 'app.app'
-
 
 -- Hotkey definitions
 local HYPER = {"ctrl", "alt", "cmd", "shift"}
@@ -55,14 +52,13 @@ caffeine:bindHotkeys({toggle = {HYPER, "C"}})
 caffeine:start()
 
 -- caffeine default on
-caffeine:setDisplay(true)
+caffeine:clicked()
 
 hs.loadSpoon('ControlEscape'):start() -- Load Hammerspoon bits from https://github.com/jasonrudolph/ControlEscape.spoon"
 
 -- ---------------
 -- Global Bindings
 -- ---------------
-
 
 -- local seal = hs.loadSpoon('Seal')
 
@@ -136,8 +132,6 @@ clock:init()
 local utils = require "utils"
 local wifi = require "wifi"
 
-
-
 hs.hotkey.alertDuration = 0
 
 hs.application.enableSpotlightForNameSearches(true)
@@ -157,29 +151,8 @@ hyperfns['L'] = hs.caffeinate.lockScreen
 -- -- Lock System
 
 -- Window Hints
-hyperfns['U'] = hs.hints.windowHints
+hyperfns['h'] = hs.hints.windowHints
 
--- -- Application hotkeys
--- hyperfns['G'] = function()
---     utils:toggle_application("Google Chrome")
--- end
--- hyperfns['I'] = function()
---     utils:toggleApp("com.googlecode.iterm2")
--- end
--- hyperfns['G'] = function()
---     utils:toggleApp("com.google.Chrome")
--- end
--- hyperfns['W'] = function()
---     utils:toggleApp("com.tencent.xinWeChat")
--- end
--- hyperfns['E'] = function()
---     utils:toggleApp("org.gnu.Emacs")
--- end
-
--- hyperfns['F'] = function()
---     -- utils:toggleApp("com.apple.finder")
---     utils:toggleFinder()
--- end
 hyperfns['M'] = function()
     utils:toggleMaximized()
 end
@@ -193,24 +166,6 @@ hyperfns['z'] = showAppKeystroke
 for _hotkey, _fn in pairs(hyperfns) do
     hs.hotkey.bind(HYPER, _hotkey, _fn)
 end
-
--- Maximize window when specify application started.
-local maximizeApps = {
-    "/Applications/iTerm.app", "/usr/local/opt/emacs-mac/Emacs.app"
-    -- "/Applications/Google Chrome.app"
-    -- "/System/Library/CoreServices/Finder.app"
-}
-
--- local windowCreateFilter = hs.window.filter.new():setDefaultFilter()
--- windowCreateFilter:subscribe(hs.window.filter.windowCreated,
---                              function(win, ttl, last)
---     for index, value in ipairs(maximizeApps) doJ∆
---         if win:application():path() == value then
---             win:maximize()
---             return true
---         end
---     end
--- end)
 
 -- Display Hammerspoon logo
 hs.loadSpoon('FadeLogo')

@@ -20,13 +20,15 @@ local hyperfns = {}
 hs.window.animationDuration = 0 -- don't waste time on animation when resize window
 
 -- Key to launch application.
-local key2app = {
+local appSettings = {
     {
         key = "i",
         bundleID = 'com.googlecode.iterm2',
         lang = 'English',
-        launchFunc = nil
-    }, {key = "e", bundleID = 'org.gnu.Emacs', lang = 'English', 2},
+        launchFunc = nil,
+        maximize = true
+    },
+    {key = "e", bundleID = 'org.gnu.Emacs', lang = 'English', maximize = true},
     {key = "g", bundleID = 'com.google.Chrome', lang = 'English'}, {
         key = "f",
         bundleID = 'com.apple.finder',
@@ -35,8 +37,12 @@ local key2app = {
     }, {key = nil, bundleID = 'com.netease.163music', lang = 'Chinese'},
     {key = "w", bundleID = 'com.tencent.xinWeChat', lang = 'Chinese'},
     {key = nil, bundleID = 'com.tencent.WeWorkMac', lang = 'Chinese'},
-    {key = "d", bundleID = 'com.kapeli.dashdoc', lang = 'English'},
-    {key = nil, bundleID = 'ru.keepcoder.Telegram', lang = 'Chinese'}
+    {key = "d", bundleID = 'com.kapeli.dashdoc', lang = 'English'}, {
+        key = nil,
+        bundleID = 'ru.keepcoder.Telegram',
+        lang = 'Chinese',
+        maximize = true
+    }
 }
 
 -- Show launch application's keystroke.
@@ -49,7 +55,7 @@ local function showAppKeystroke()
         -- Show application keystroke if alert id is empty.
         local keystroke = ""
         local keystrokeString = ""
-        for _, app in pairs(key2app) do
+        for _, app in pairs(appSettings) do
             local key = app.key
             local bundleID = app.bundleID
             if key then
@@ -80,23 +86,13 @@ local function showAppKeystroke()
     end
 end
 
--- function launchApp(appPath)
---   application.launchOrFocus(appPath)
--- end
-
--- function keyStroke(modifiers, character)
---     hs.eventtap.event.newKeyEvent(modifiers, string.lower(character), true):post()
---     hs.eventtap.event.newKeyEvent(modifiers, string.lower(character), false):post()
--- end
-
 -- first bind hyperfns
-for _, app in pairs(key2app) do
+for _, app in pairs(appSettings) do
     local key = app.key
     local bundleID = app.bundleID
     if key and bundleID then
-        -- local launchFunc = toggleApp(bundleID)
         local launchFunc = app.launchFunc or function()
-            toggleApp(bundleID)
+            toggleApp(app)
         end
         hyperfns[key] = launchFunc
     end
@@ -108,77 +104,117 @@ for key, func in pairs(hyperfns) do
 end
 
 local updateInputMethod = function()
-    for _, app in pairs(key2app) do
+    local focusedWindow = window.focusedWindow()
+    if not focusedWindow then
+        return
+    end
+
+    local currentApplication = focusedWindow:application()
+    if not currentApplication then
+        return
+    end
+
+    local currentBundleID = currentApplication:bundleID()
+    if not currentBundleID then
+        return
+    end
+
+    for _, app in pairs(appSettings) do
         local bundleID = app.bundleID
         local lang = app.lang
         if bundleID and lang then
-            if window.focusedWindow():application():bundleID() == bundleID then
+            if currentBundleID == bundleID then
                 local currentInputMethod = hs.keycodes.currentMethod()
-                logger:d("currentInputMethod is:" ..
+                local currentLayout = hs.keycodes.currentLayout()
+                logger:d('currentLayout: ' .. (currentLayout or 'nil') ..
+                             ",currentInputMethod: " ..
                              (currentInputMethod or 'nil'))
 
-                if lang == "English" then
+                if lang == "English" and
+                    (currentLayout ~= 'U.S.' or currentInputMethod) then
                     logger:d("bundleID is: " .. bundleID .. ",switch to english")
                     hs.keycodes.setLayout("U.S.")
-                else
+                elseif lang == "Chinese" and currentInputMethod ~= 'Squirrel' then
                     logger:d("bundleID is: " .. bundleID .. ",switch to chinese")
                     hs.keycodes.setMethod("Squirrel")
                 end
+
                 break
             end
         end
     end
+end
 
-    -- Handle cursor focus and application's screen manage.
-    local function appImWatcher(appName, eventType, appObject)
-        -- Move cursor to center of application when application activated.
-        -- Then don't need move cursor between screens.
-        if (eventType == hs.application.watcher.activated) then
-            -- Just adjust cursor postion if app open by user keyboard.
-            updateInputMethod()
-        end
+-- Maximize window when specify application started.
+local windowCreateFilter = hs.window.filter.new():setDefaultFilter()
+windowCreateFilter:subscribe(hs.window.filter.windowCreated,
+                             function(win, ttl, last)
+    if not win then
+        return false
     end
 
-    -- auto change the im for the application
-    imWatcher = hs.application.watcher.new(appImWatcher)
-    imWatcher:start()
+    local currentApplication = win:application()
+    if not currentApplication then
+        return false
+    end
 
-    -- toggle App
-    -- return function
-    toggleApp = function(appBundleID)
-        -- local win = hs.window.focusedWindow()
-        -- local app = win:application()
-        local app = hs.application.frontmostApplication()
-        if app ~= nil and app:bundleID() == appBundleID then
-            app:hide()
-            -- win:sendToBack()
-        elseif app == nil then
-            hs.application.launchOrFocusByBundleID(appBundleID)
-        else
-            -- app:activate()
-            hs.application.launchOrFocusByBundleID(appBundleID)
-            app = hs.application.get(appBundleID)
-            if app == nil then
-                return
-            end
-            local wins = app:visibleWindows()
-            if #wins > 0 then
-                for k, win in pairs(wins) do
-                    if win:isMinimized() then
-                        win:unminimize()
-                    end
+    local currentBundleID = currentApplication:bundleID()
+    for _, app in ipairs(appSettings) do
+        if currentBundleID == app.bundleID and app.maximize then
+            logger:d("create filter")
+            win:maximize()
+            return true
+        end
+    end
+end)
+
+-- Handle cursor focus and application's screen manage.
+local function appImWatcher(appName, eventType, appObject)
+    -- Move cursor to center of application when application activated.
+    -- Then don't need move cursor between screens.
+    if (eventType == hs.application.watcher.activated) then
+        -- Just adjust cursor postion if app open by user keyboard.
+        updateInputMethod()
+    end
+end
+
+-- auto change the im for the application
+imWatcher = hs.application.watcher.new(appImWatcher)
+imWatcher:start()
+
+-- toggle App
+toggleApp = function(app)
+    local appBundleID = app.bundleID
+    local currentApp = hs.application.frontmostApplication()
+    if currentApp ~= nil and currentApp:bundleID() == appBundleID then
+        currentApp:hide()
+        -- win:sendToBack()
+    elseif currentApp == nil then
+        hs.application.launchOrFocusByBundleID(appBundleID)
+    else
+        -- app:activate()
+        hs.application.launchOrFocusByBundleID(appBundleID)
+        currentApp = hs.application.get(appBundleID)
+        if currentApp == nil then
+            return
+        end
+        local wins = currentApp:visibleWindows()
+        if #wins > 0 then
+            for k, win in pairs(wins) do
+                if win:isMinimized() then
+                    win:unminimize()
                 end
-            else
-                hs.application.open(appBundleID)
-                app:activate()
             end
+        else
+            hs.application.open(appBundleID)
+            currentApp:activate()
+        end
 
-            local win = app:mainWindow()
-            if win ~= nil then
-                win:application():activate(true)
-                win:application():unhide()
-                win:focus()
-            end
+        local win = currentApp:mainWindow()
+        if win ~= nil then
+            win:application():activate(true)
+            win:application():unhide()
+            win:focus()
         end
     end
 end
