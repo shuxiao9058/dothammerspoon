@@ -11,8 +11,8 @@ local hints = require 'hs.hints'
 -- function declaration
 local toggleApp
 local toggleFinder
--- local updateInputMethod
-local appLangWatcher -- 检测输入法
+local appImWatcher -- 检测输入法
+local toggleMaximized -- 最大化窗口
 
 local hyperfns = {}
 
@@ -40,6 +40,17 @@ local appSettings = {
     {key = "d", bundleID = 'com.kapeli.dashdoc', lang = 'English'}, {
         key = nil,
         bundleID = 'ru.keepcoder.Telegram',
+        lang = 'Chinese',
+        maximize = true
+    },
+    {
+        key = nil,
+        bundleID = 'com.apple.Safari',
+        lang = 'English',
+        maximize = true
+    }, {
+        key = nil,
+        bundleID = 'com.devon-technologies.think3',
         lang = 'Chinese',
         maximize = true
     }
@@ -97,6 +108,13 @@ for _, app in pairs(appSettings) do
         hyperfns[key] = launchFunc
     end
 end
+
+-- maximize window
+hyperfns["M"] = function()
+    toggleMaximized()
+end
+-- Window Hints
+hyperfns['h'] = hs.hints.windowHints
 
 -- then launchApp or refocus application.
 for key, func in pairs(hyperfns) do
@@ -169,7 +187,7 @@ windowCreateFilter:subscribe(hs.window.filter.windowCreated,
 end)
 
 -- Handle cursor focus and application's screen manage.
-local function appImWatcher(appName, eventType, appObject)
+appImWatcher = function(appName, eventType, appObject)
     -- Move cursor to center of application when application activated.
     -- Then don't need move cursor between screens.
     if (eventType == hs.application.watcher.activated) then
@@ -276,5 +294,30 @@ toggleFinder = function()
                 win:focus()
             end
         end
+    end
+end
+
+-- Window cache for window maximize toggler
+local frameCache = {}
+
+-- Toggle current window between its normal size, and being maximized
+toggleMaximized = function()
+    local win = hs.window.focusedWindow()
+    -- hs.alert.show("win" .. tostring(win:application():name()))
+    if (win == nil) or (win:id() == nil) then
+        return
+    end
+
+    if win:application():name() == "Emacs" then
+        hs.eventtap.keyStroke({"alt"}, "F10")
+        return
+    end
+
+    if frameCache[win:id()] then
+        win:setFrame(frameCache[win:id()])
+        frameCache[win:id()] = nil
+    else
+        frameCache[win:id()] = win:frame()
+        win:maximize()
     end
 end

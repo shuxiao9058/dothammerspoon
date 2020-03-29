@@ -150,14 +150,6 @@ hyperfns['L'] = hs.caffeinate.lockScreen
 -- hyperfns['.'] = flux.increaseLevel
 -- -- Lock System
 
--- Window Hints
-hyperfns['h'] = hs.hints.windowHints
-
-hyperfns['M'] = function()
-    utils:toggleMaximized()
-end
--- hs.hotkey.bind(hyper, "M", toggleMaximized)
-
 -- switch
 hyperfns['-'] = wifi.toggleWifi
 
