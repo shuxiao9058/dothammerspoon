@@ -70,12 +70,11 @@ local function showAppKeystroke()
             local key = app.key
             local bundleID = app.bundleID
             if key then
-                local info = hs.application.infoForBundleID(bundleID)
-                if info then
-                    local bundleExec = info.CFBundleExecutable
-                    logger:d("bundleExec is: " .. (bundleExec or 'nil'))
+                local appName = hs.application.nameForBundleID(bundleID)
+                if appName then
+                    logger:d("appName is: " .. (appName or 'nil'))
 
-                    keystrokeString = string.format("%-10s%s", key, bundleExec)
+                    keystrokeString = string.format("%-10s%s", key, appName)
                     logger:d("keystrokeString is:" .. keystrokeString)
                     if keystroke == "" then
                         keystroke = keystrokeString
