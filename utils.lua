@@ -3,7 +3,7 @@ local utils = {}
 -- Helper functions
 
 -- -- Toggle an application between being the frontmost app, and being hidden
--- function utils.toggle_application(_app)
+-- function utils:toggle_application(_app)
 --     local app = hs.appfinder.appFromName(_app)
 --     if not app then
 --         -- FIXME: This should really launch _app
@@ -24,7 +24,7 @@ local utils = {}
 -- -- local toggleMaximizedMap={}
 -- local toggleMaximizedMap={}
 -- -- hs.geometry.rect(0, -48, 400, 48)
--- function utils.toggleMaximized()
+-- function utils:toggleMaximized()
 --    local win = hs.window.frontmostWindow()
 --    if win ==nil then
 --       return
@@ -73,7 +73,7 @@ local utils = {}
 local frameCache = {}
 
 -- Toggle current window between its normal size, and being maximized
-function utils.toggleMaximized()
+function utils:toggleMaximized()
     local win = hs.window.focusedWindow()
     -- hs.alert.show("win" .. tostring(win:application():name()))
     if (win == nil) or (win:id() == nil) then
@@ -94,134 +94,7 @@ function utils.toggleMaximized()
     end
 end
 
--- toggle App
-function utils.toggleApp(appBundleID)
-    -- local win = hs.window.focusedWindow()
-    -- local app = win:application()
-    local app = hs.application.frontmostApplication()
-    if app ~= nil and app:bundleID() == appBundleID then
-        app:hide()
-        -- win:sendToBack()
-    elseif app == nil then
-        hs.application.launchOrFocusByBundleID(appBundleID)
-    else
-        -- app:activate()
-        hs.application.launchOrFocusByBundleID(appBundleID)
-        app = hs.application.get(appBundleID)
-        if app == nil then
-            return
-        end
-        local wins = app:visibleWindows()
-        if #wins > 0 then
-            for k, win in pairs(wins) do
-                if win:isMinimized() then
-                    win:unminimize()
-                end
-            end
-        else
-            hs.application.open(appBundleID)
-            app:activate()
-        end
-
-        local win = app:mainWindow()
-        if win ~= nil then
-            win:application():activate(true)
-            win:application():unhide()
-            win:focus()
-        end
-    end
-end
-
-function utils.toggleEmacs()
-    local windows = hs.window.allWindows()
-    local emacsWindow = nil
-    local emacsApplicationName = "Emacs"
-    for i, window in ipairs(windows) do
-        local application = window:application()
-        local applicationName = application:name()
-        if applicationName == emacsApplicationName then
-            emacsWindow = window
-        end
-        -- logger.d(applicationName)
-    end
-
-    local window = hs.window.focusedWindow()
-    local application = window:application()
-    local focused = application:name() == "Emacs"
-    if not focused then
-        if not emacsWindow then
-            hs.notify.show('Please run Emacs first', 'Emacs is not runnint now',
-                           '')
-        else
-            emacsWindow:focus()
-        end
-    else
-        application:hide()
-    end
-end
-
----------------------------------------------------------------
-function utils.toggleFinder()
-    local appBundleID = "com.apple.finder"
-    local topWin = hs.window.focusedWindow()
-    if topWin == nil then
-        return
-    end
-    local topApp = topWin:application()
-    -- local topApp =hs.application.frontmostApplication()
-
-    -- The desktop belongs to Finder.app: when Finder is the active application, you can focus the desktop by cycling through windows via cmd-`
-    -- The desktop window has no id, a role of AXScrollArea and no subrole
-    -- and #topApp:visibleWindows()>0
-    if topApp ~= nil and topApp:bundleID() == appBundleID and topWin:role() ~=
-        "AXScrollArea" then
-        topApp:hide()
-    else
-        finderApp = hs.application.get(appBundleID)
-        if finderApp == nil then
-            hs.application.launchOrFocusByBundleID(appBundleID)
-            return
-        end
-        local wins = finderApp:allWindows()
-        local isWinExists = true
-        if #wins == 0 then
-            isWinExists = false
-        elseif (wins[1]:role() == "AXScrollArea" and #wins == 1) then
-            isWinExists = false
-        end
-
-        -- local wins=app:visibleWindows()
-        if not isWinExists then
-            wins = hs.window.filter.new(false):setAppFilter("Finder", {})
-                       :getWindows()
-        end
-
-        if #wins == 0 then
-            hs.application.launchOrFocusByBundleID(appBundleID)
-            for _, win in pairs(wins) do
-                if win:isMinimized() then
-                    win:unminimize()
-                end
-
-                win:application():activate(true)
-                win:application():unhide()
-                win:focus()
-            end
-        else
-            for _, win in pairs(wins) do
-                if win:isMinimized() then
-                    win:unminimize()
-                end
-
-                win:application():activate(true)
-                win:application():unhide()
-                win:focus()
-            end
-        end
-    end
-end
-
-function utils.urlencode(str)
+function utils:urlencode(str)
     if (str) then
         str = string.gsub(str, "\n", "\r\n")
         str = string.gsub(str, "([^%w ])", function(c)
