@@ -155,6 +155,8 @@ hyperfns['-'] = wifi.toggleWifi
 
 hyperfns['z'] = showAppKeystroke
 
+hyperfns['t']  = require("blj.blj")
+
 for _hotkey, _fn in pairs(hyperfns) do
     hs.hotkey.bind(HYPER, _hotkey, _fn)
 end
