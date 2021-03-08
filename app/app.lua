@@ -27,9 +27,13 @@ local appSettings = {
         lang = 'English',
         launchFunc = nil,
         maximize = true
-    },
-    {key = "e", bundleID = 'org.gnu.Emacs', lang = 'English', maximize = true},
-    {key = "g", bundleID = 'com.google.Chrome', lang = 'English'}, {
+    }, {
+        key = "e",
+        bundleID = 'org.gnu.Emacs',
+        lang = 'English',
+        launchFunc = nil,
+        maximize = true
+    }, {key = "g", bundleID = 'com.google.Chrome', lang = 'English'}, {
         key = "f",
         bundleID = 'com.apple.finder',
         lang = 'English',
@@ -51,7 +55,13 @@ local appSettings = {
     }, {
         key = nil,
         bundleID = 'com.devon-technologies.think3',
-        lang = 'Chinese',
+        lang = 'Chinese'
+        -- maximize = true
+    },
+    {
+        key = nil,
+        bundleID = 'com.sublimetext.3',
+        lang = 'English',
         maximize = true
     }
 }
@@ -114,6 +124,7 @@ hyperfns["M"] = function()
 end
 -- Window Hints
 hyperfns['h'] = hs.hints.windowHints
+hyperfns["Z"] = showAppKeystroke
 
 -- then launchApp or refocus application.
 for key, func in pairs(hyperfns) do

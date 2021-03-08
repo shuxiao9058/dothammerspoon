@@ -25,6 +25,7 @@ function toggleAPPs.toggleEmacs()        --    toggle emacsclient if emacs daemo
          end
          return
       end
+      
       local wins=emacsApp:allWindows() -- 只在当前space 找，
       if #wins==0 then
          wins=hs.window.filter.new(false):setAppFilter("Emacs",{}):getWindows() -- 在所有space找，但是window.filter的bug多，不稳定

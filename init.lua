@@ -121,6 +121,40 @@ hs.window.animationDuration = 0.3
 --     }
 -- )
 
+-- Power JSON Editor cmd-t work as new tab
+reloadFxFromPowerJSONEditor = hs.hotkey.new('cmd', 't', function()
+      hs.application.launchOrFocusByBundleID("com.xujiwei.powerjsoneditor")
+      -- reloadFxFromPowerJSONEditor:disable() -- does not work without this, even though it should
+      -- hs.eventtap.keyStroke({"cmd"}, "t")
+      local topWindow = hs.window:frontmostWindow()
+         if topWindow ~= nil then
+                    logger:d("topWindow is not nil " )
+
+        local topApp = topWindow:application()
+        if topApp ~= nil then
+            local bunderID = topApp:bundleID()
+            logger:d("bundleID is: " .. bunderID)
+
+            if bunderID == 'com.xujiwei.powerjsoneditor' then
+                local topLeft = topWindow:topLeft()
+                local winSize = topWindow:size()
+                if topLeft ~= nil and winSize ~= nil then
+                    local originalMousePoint = hs.mouse.absolutePosition() 
+                    local newTabButtonPoint = hs.geometry.point(topLeft.x+winSize.w - 12.5, topLeft.y+52+12.5)
+                 --     logger:d("top left is " .. tostring(topLeft) .. ', winSize: ' .. tostring(winSize) ..
+                 -- ', mouseLocation: ' .. tostring(mouseLocation) .. ', newTabButtonPos is: ' .. tostring(newTabButtonPoint))
+                    hs.eventtap.leftClick(newTabButtonPoint)
+                    hs.mouse.absolutePosition(originalMousePoint) -- restore mouse position
+                end
+            end
+        end
+    end
+  end)
+
+hs.window.filter.new('Power JSON Editor')
+    :subscribe(hs.window.filter.windowFocused,function() reloadFxFromPowerJSONEditor:enable() end)
+    :subscribe(hs.window.filter.windowUnfocused,function() reloadFxFromPowerJSONEditor:disable() end)
+
 local clock = hs.loadSpoon("AClock")
 clock.format = "%H:%M:%S"
 clock.textColor = {hex = "#00c403"}
@@ -153,9 +187,7 @@ hyperfns['L'] = hs.caffeinate.lockScreen
 -- switch
 hyperfns['-'] = wifi.toggleWifi
 
-hyperfns['z'] = showAppKeystroke
-
-hyperfns['t']  = require("blj.blj")
+hyperfns['t'] = require("blj.blj")
 
 for _hotkey, _fn in pairs(hyperfns) do
     hs.hotkey.bind(HYPER, _hotkey, _fn)
