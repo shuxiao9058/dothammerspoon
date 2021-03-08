@@ -123,37 +123,44 @@ hs.window.animationDuration = 0.3
 
 -- Power JSON Editor cmd-t work as new tab
 newTabWithPowerJSONEditor = hs.hotkey.new('cmd', 't', function()
-      hs.application.launchOrFocusByBundleID("com.xujiwei.powerjsoneditor")
-      -- newTabWithPowerJSONEditor:disable() -- does not work without this, even though it should
-      -- hs.eventtap.keyStroke({"cmd"}, "t")
-      local topWindow = hs.window:frontmostWindow()
-         if topWindow ~= nil then
-                    logger:d("topWindow is not nil " )
+    hs.application.launchOrFocusByBundleID("com.xujiwei.powerjsoneditor")
+    -- newTabWithPowerJSONEditor:disable() -- does not work without this, even though it should
+    -- hs.eventtap.keyStroke({"cmd"}, "t")
+    local topWindow = hs.window:frontmostWindow()
+    if topWindow ~= nil then
+        -- logger:d("topWindow is not nil " )
 
         local topApp = topWindow:application()
         if topApp ~= nil then
             local bunderID = topApp:bundleID()
-            logger:d("bundleID is: " .. bunderID)
+            -- logger:d("bundleID is: " .. bunderID)
 
             if bunderID == 'com.xujiwei.powerjsoneditor' then
-                local topLeft = topWindow:topLeft()
-                local winSize = topWindow:size()
-                if topLeft ~= nil and winSize ~= nil then
-                    local originalMousePoint = hs.mouse.absolutePosition() 
-                    local newTabButtonPoint = hs.geometry.point(topLeft.x+winSize.w - 12.5, topLeft.y+52+12.5)
-                 --     logger:d("top left is " .. tostring(topLeft) .. ', winSize: ' .. tostring(winSize) ..
-                 -- ', mouseLocation: ' .. tostring(mouseLocation) .. ', newTabButtonPos is: ' .. tostring(newTabButtonPoint))
+                local frameRect = topWindow:frame()
+                if frameRect ~= nil then
+                    local originalMousePoint = hs.mouse.absolutePosition()
+                    local newTabButtonPoint =
+                        hs.geometry.point(frameRect.x + frameRect.w - 12.5,
+                                          frameRect.y + 52 + 12.5)
+                    -- logger:d("top left is " .. tostring(topLeft) ..
+                    --              ', winSize: ' .. tostring(winSize) ..
+                    --              ', mouseLocation: ' .. tostring(mouseLocation) ..
+                    --              ', newTabButtonPos is: ' ..
+                    --              tostring(newTabButtonPoint))
                     hs.eventtap.leftClick(newTabButtonPoint)
                     hs.mouse.absolutePosition(originalMousePoint) -- restore mouse position
                 end
             end
         end
     end
-  end)
+end)
 
-hs.window.filter.new('Power JSON Editor')
-    :subscribe(hs.window.filter.windowFocused,function() newTabWithPowerJSONEditor:enable() end)
-    :subscribe(hs.window.filter.windowUnfocused,function() newTabWithPowerJSONEditor:disable() end)
+hs.window.filter.new('Power JSON Editor'):subscribe(
+    hs.window.filter.windowFocused, function()
+        newTabWithPowerJSONEditor:enable()
+    end):subscribe(hs.window.filter.windowUnfocused, function()
+    newTabWithPowerJSONEditor:disable()
+end)
 
 local clock = hs.loadSpoon("AClock")
 clock.format = "%H:%M:%S"
