@@ -122,9 +122,9 @@ hs.window.animationDuration = 0.3
 -- )
 
 -- Power JSON Editor cmd-t work as new tab
-reloadFxFromPowerJSONEditor = hs.hotkey.new('cmd', 't', function()
+newTabWithPowerJSONEditor = hs.hotkey.new('cmd', 't', function()
       hs.application.launchOrFocusByBundleID("com.xujiwei.powerjsoneditor")
-      -- reloadFxFromPowerJSONEditor:disable() -- does not work without this, even though it should
+      -- newTabWithPowerJSONEditor:disable() -- does not work without this, even though it should
       -- hs.eventtap.keyStroke({"cmd"}, "t")
       local topWindow = hs.window:frontmostWindow()
          if topWindow ~= nil then
@@ -152,8 +152,8 @@ reloadFxFromPowerJSONEditor = hs.hotkey.new('cmd', 't', function()
   end)
 
 hs.window.filter.new('Power JSON Editor')
-    :subscribe(hs.window.filter.windowFocused,function() reloadFxFromPowerJSONEditor:enable() end)
-    :subscribe(hs.window.filter.windowUnfocused,function() reloadFxFromPowerJSONEditor:disable() end)
+    :subscribe(hs.window.filter.windowFocused,function() newTabWithPowerJSONEditor:enable() end)
+    :subscribe(hs.window.filter.windowUnfocused,function() newTabWithPowerJSONEditor:disable() end)
 
 local clock = hs.loadSpoon("AClock")
 clock.format = "%H:%M:%S"
