@@ -128,28 +128,14 @@ newTabWithPowerJSONEditor = hs.hotkey.new('cmd', 't', function()
     -- hs.eventtap.keyStroke({"cmd"}, "t")
     local topWindow = hs.window:frontmostWindow()
     if topWindow ~= nil then
-        -- logger:d("topWindow is not nil " )
-
         local topApp = topWindow:application()
         if topApp ~= nil then
             local bunderID = topApp:bundleID()
-            -- logger:d("bundleID is: " .. bunderID)
-
             if bunderID == 'com.xujiwei.powerjsoneditor' then
-                local frameRect = topWindow:frame()
-                if frameRect ~= nil then
-                    local originalMousePoint = hs.mouse.absolutePosition()
-                    local newTabButtonPoint =
-                        hs.geometry.point(frameRect.x + frameRect.w - 12.5,
-                                          frameRect.y + 52 + 12.5)
-                    -- logger:d("top left is " .. tostring(topLeft) ..
-                    --              ', winSize: ' .. tostring(winSize) ..
-                    --              ', mouseLocation: ' .. tostring(mouseLocation) ..
-                    --              ', newTabButtonPos is: ' ..
-                    --              tostring(newTabButtonPoint))
-                    hs.eventtap.leftClick(newTabButtonPoint)
-                    hs.mouse.absolutePosition(originalMousePoint) -- restore mouse position
-                end
+                local newTabAppleScriptFile =
+                    hs.configdir ..
+                        "/applescript/powerjsoneditor_newtab.applescript"
+                hs.osascript.applescriptFromFile(newTabAppleScriptFile)
             end
         end
     end

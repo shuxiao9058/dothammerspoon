@@ -13,6 +13,7 @@ local toggleApp
 local toggleFinder
 local appImWatcher -- 检测输入法
 local toggleMaximized -- 最大化窗口
+local lanchEmacs
 
 local hyperfns = {}
 
@@ -31,7 +32,7 @@ local appSettings = {
         key = "e",
         bundleID = 'org.gnu.Emacs',
         lang = 'English',
-        launchFunc = nil,
+        launchFunc = launchEmacs,
         maximize = true
     }, {key = "g", bundleID = 'com.google.Chrome', lang = 'English'}, {
         key = "f",
@@ -65,6 +66,18 @@ local appSettings = {
         maximize = true
     }
 }
+
+hs.urlevent.bind('toggleEmacs', function(eventName, params)
+    local emacsAPPCfg = {
+        key = "e",
+        bundleID = 'org.gnu.Emacs',
+        lang = 'English',
+        launchFunc = launchEmacs,
+        maximize = true
+    }
+
+    toggleApp(emacsAPPCfg)
+end)
 
 -- Show launch application's keystroke.
 local showAppKeystrokeAlertId = ""
@@ -214,11 +227,16 @@ imWatcher:start()
 toggleApp = function(app)
     local appBundleID = app.bundleID
     local currentApp = hs.application.frontmostApplication()
+    local launchFunc = app.launchFunc
     if currentApp ~= nil and currentApp:bundleID() == appBundleID then
         currentApp:hide()
         -- win:sendToBack()
     elseif currentApp == nil then
-        hs.application.launchOrFocusByBundleID(appBundleID)
+        if launchFunc then
+            launchFunc()
+        else
+            hs.application.launchOrFocusByBundleID(appBundleID)
+        end
     else
         -- app:activate()
         hs.application.launchOrFocusByBundleID(appBundleID)
@@ -305,6 +323,11 @@ toggleFinder = function()
             end
         end
     end
+end
+
+launchEmacs = function()
+    hs.execute(
+        "/usr/local/bin/zsh /Applications/Emacs.app/Contents/MacOS/Emacs.sh")
 end
 
 -- Window cache for window maximize toggler
