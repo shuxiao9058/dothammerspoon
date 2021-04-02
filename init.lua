@@ -148,6 +148,27 @@ hs.window.filter.new('Power JSON Editor'):subscribe(
     newTabWithPowerJSONEditor:disable()
 end)
 
+emacsCtrlSpaceSwitchIM = hs.hotkey.new('ctrl', 'space', function()
+    -- hs.application.launchOrFocusByBundleID("com.gnu.Emacs")
+    local topWindow = hs.window:frontmostWindow()
+    if topWindow ~= nil then
+        local topApp = topWindow:application()
+        if topApp ~= nil then
+            local bunderID = topApp:bundleID()
+            if bunderID == 'org.gnu.Emacs' then
+                hs.eventtap.keyStroke({"ctrl"}, "\\")
+            end
+        end
+    end
+end)
+
+hs.window.filter.new('Emacs'):subscribe(hs.window.filter.windowFocused,
+                                        function()
+    emacsCtrlSpaceSwitchIM:enable()
+end):subscribe(hs.window.filter.windowUnfocused, function()
+    emacsCtrlSpaceSwitchIM:disable()
+end)
+
 local clock = hs.loadSpoon("AClock")
 clock.format = "%H:%M:%S"
 clock.textColor = {hex = "#00c403"}
