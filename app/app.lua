@@ -13,7 +13,15 @@ local toggleApp
 local toggleFinder
 local appImWatcher -- 检测输入法
 local toggleMaximized -- 最大化窗口
-local lanchEmacs
+local launchEmacs = function()
+    local launchEmacsCmd =
+        [[do shell script "nohup /usr/local/opt/emacs-mac/Emacs.app/Contents/MacOS/Emacs.sh --dump-file=\"$HOME/.emacs.d/.local/cache/dump/emacs.pdump\" --load=\"$HOME/.emacs.d/pdump-init.el\" > /dev/null 2>&1 &"]]
+    hs.osascript.applescript(launchEmacsCmd)
+    -- local launchEmacsCmd = "nohup /usr/local/bin/zsh /usr/local/opt/emacs-mac/Emacs.app/Contents/MacOS/Emacs.sh --dump-file=\"$HOME/.emacs.d/.local/cache/dump/emacs.pdump\" --load=\"$HOME/.emacs.d/pdump-init.el\" > /dev/null 2>&1 &"
+    -- local launchEmacsCmd =
+    --     "/usr/local/bin/zsh /usr/local/opt/emacs-mac/Emacs.app/Contents/MacOS/Emacs.sh --dump-file=\"$HOME/.emacs.d/.local/cache/dump/emacs.pdump\" --load=\"$HOME/.emacs.d/pdump-init.el\" > /dev/null 2>&1 &"
+    -- hs.execute(launchEmacsCmd)
+end
 
 local hyperfns = {}
 
@@ -40,8 +48,10 @@ local appSettings = {
         lang = 'English',
         launchFunc = toggleFinder
     }, {key = nil, bundleID = 'com.netease.163music', lang = 'Chinese'},
-    {key = "w", bundleID = 'com.tencent.xinWeChat', lang = 'Chinese'},
-    {key = nil, bundleID = 'com.tencent.WeWorkMac', lang = 'Chinese'},
+    { -- key = "w",
+        bundleID = 'com.tencent.xinWeChat',
+        lang = 'Chinese'
+    }, {key = nil, bundleID = 'com.tencent.WeWorkMac', lang = 'Chinese'},
     {key = "d", bundleID = 'com.kapeli.dashdoc', lang = 'English'}, {
         key = nil,
         bundleID = 'ru.keepcoder.Telegram',
@@ -124,10 +134,13 @@ for _, app in pairs(appSettings) do
     local key = app.key
     local bundleID = app.bundleID
     if key and bundleID then
-        local launchFunc = app.launchFunc or function()
+
+        -- local launchFunc = app.launchFunc or function()
+        --     toggleApp(app)
+        -- end
+        hyperfns[key] = function()
             toggleApp(app)
         end
-        hyperfns[key] = launchFunc
     end
 end
 
@@ -228,22 +241,36 @@ toggleApp = function(app)
     local appBundleID = app.bundleID
     local currentApp = hs.application.frontmostApplication()
     local launchFunc = app.launchFunc
-    if currentApp ~= nil and currentApp:bundleID() == appBundleID then
-        currentApp:hide()
-        -- win:sendToBack()
-    elseif currentApp == nil then
-        if launchFunc then
-            launchFunc()
-        else
+    -- logger:d("app: " .. hs.json.encode(app, true))
+
+    if launchFunc == nil then
+        launchFunc = function()
             hs.application.launchOrFocusByBundleID(appBundleID)
         end
+    end
+
+    -- 如果指定程序在最前面，则 hide
+    if currentApp ~= nil and currentApp:bundleID() == appBundleID then
+        currentApp:hide()
     else
-        -- app:activate()
-        hs.application.launchOrFocusByBundleID(appBundleID)
         currentApp = hs.application.get(appBundleID)
+        -- local apps = hs.application.applicationsForBundleID(appBundleID)
+        -- if apps ~= nil then
+        --     currentApp = apps[1]
+        --     for _, app in ipairs(apps) do
+        --         logger:d("len(apps) = ", #apps, ", appId: ", app:pid())
+        --     end
+        -- end
+        logger:d("currentApp is: " .. tostring(currentApp))
+        if currentApp == nil then
+            launchFunc()
+            currentApp = hs.application.get(appBundleID)
+        end
+
         if currentApp == nil then
             return
         end
+
         local wins = currentApp:visibleWindows()
         if #wins > 0 then
             for k, win in pairs(wins) do
@@ -252,7 +279,6 @@ toggleApp = function(app)
                 end
             end
         else
-            hs.application.open(appBundleID)
             currentApp:activate()
         end
 
@@ -325,10 +351,11 @@ toggleFinder = function()
     end
 end
 
-launchEmacs = function()
-    hs.execute(
-        "/usr/local/bin/zsh /Applications/Emacs.app/Contents/MacOS/Emacs.sh")
-end
+-- launchEmacs = function()
+--     hs.execute("/Applications/Emacs.app/Contents/MacOS/Emacs.sh --dump-file=\"/Users/jiya/.emacs.d/emacs.pdmp\" --script \"/Users/jiya/.emacs.d/pdump-init.el\"", nil)
+--     -- hs.execute(
+--     --     "/usr/local/bin/zsh /Applications/Emacs.app/Contents/MacOS/Emacs.sh")
+-- end
 
 -- Window cache for window maximize toggler
 local frameCache = {}
