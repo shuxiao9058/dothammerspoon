@@ -8,6 +8,20 @@ logger = hs.logger.new('Init', 'debug')
 hs.console.clearConsole()
 -- local logger = hs.logger.new("init", "debug")
 
+function isArm64Func()
+    local out = hs.execute("uname -m")
+    if out then
+        out = string.gsub(out, "^%s*(.-)%s*$", "%1")
+        return out == "arm64"
+    end
+
+    return false
+end
+
+isArm64 = isArm64Func()
+
+logger:d("isArm64 is:" .. tostring(isArm64 or 'false'))
+
 require 'app.app'
 
 -- Hotkey definitions

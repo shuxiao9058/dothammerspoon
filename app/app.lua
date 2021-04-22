@@ -14,8 +14,15 @@ local toggleFinder
 local appImWatcher -- 检测输入法
 local toggleMaximized -- 最大化窗口
 local launchEmacs = function()
+
     local launchEmacsCmd =
-        [[do shell script "nohup /usr/local/opt/emacs-mac/Emacs.app/Contents/MacOS/Emacs.sh --dump-file=\"$HOME/.emacs.d/.local/cache/dump/emacs.pdump\" --load=\"$HOME/.emacs.d/pdump-init.el\" > /dev/null 2>&1 &"]]
+        [[do shell script "nohup /run/current-system/Applications/Emacs.app/Contents/MacOS/Emacs.sh --dump-file=\"$HOME/.emacs.d/.local/cache/dump/emacs.pdump\" --load=\"$HOME/.emacs.d/pdump-init.el\" > /dev/null 2>&1 &"]]
+    if isArm64 then
+        launchEmacsCmd =
+            [[do shell script "nohup /opt/homebrew/opt/emacs-mac/Emacs.app/Contents/MacOS/Emacs.sh --dump-file=\"$HOME/.emacs.d/.local/cache/dump/emacs.pdump\" --load=\"$HOME/.emacs.d/pdump-init.el\" > /dev/null 2>&1 &"]]
+    end
+
+    -- [[do shell script "nohup /usr/local/opt/emacs-mac/Emacs.app/Contents/MacOS/Emacs.sh --dump-file=\"$HOME/.emacs.d/.local/cache/dump/emacs.pdump\" --load=\"$HOME/.emacs.d/pdump-init.el\" > /dev/null 2>&1 &"]]
     hs.osascript.applescript(launchEmacsCmd)
     -- local launchEmacsCmd = "nohup /usr/local/bin/zsh /usr/local/opt/emacs-mac/Emacs.app/Contents/MacOS/Emacs.sh --dump-file=\"$HOME/.emacs.d/.local/cache/dump/emacs.pdump\" --load=\"$HOME/.emacs.d/pdump-init.el\" > /dev/null 2>&1 &"
     -- local launchEmacsCmd =
