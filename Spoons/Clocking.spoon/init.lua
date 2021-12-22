@@ -79,6 +79,13 @@ updateClockingMenu = function()
         menuBarItem = hs.menubar.new()
     end
 
+    local currentApp = hs.application.get('org.gnu.Emacs')
+    if not currentApp then
+        logger:d('emacs is not running')
+        menuBarItem:setTitle('Emacs Stopped')
+        return
+    end
+
     eval('(org-clock-is-active)', function(value)
         if value == 'nil' then
             menuBarItem:setTitle('No Task')
@@ -95,12 +102,81 @@ updateClockingMenu = function()
 end
 
 
-startUpdatingClockingMenu = function()
-    if not updateTimer then
-        updateTimer = hs.timer.new(10, updateClockingMenu)
+local function urlEvent(eventName, params)
+    logger:d('url event: ', eventName, hs.json.encode(params))
+    -- logger:d('state: ', params.state, ', status: ', params.status,
+    --          ', clock_string: ', params.clockString)
+    if not params then
+        logger:e('params is nil')
+        return
     end
 
-    updateTimer:start()
+    if not menuBarItem then
+        menuBarItem = hs.menubar.new()
+    end
+
+    local state, status, clockString = params.state, params.status,
+                                       params.clockString
+    local currentApp = hs.application.get('org.gnu.Emacs')
+    if not currentApp then
+        logger:d('emacs is not running')
+        menuBarItem:setTitle('Emacs Stopped')
+        return
+    end
+
+    local separator = hs.styledtext.new(' | ', {
+        font = hs.styledtext.defaultFonts.menuBar,
+    })
+    -- if status == 'Pomo' then
+    --     -- menuBarItem:setTitle('')
+    -- end
+    local focusedStyle = {
+        font = hs.styledtext.defaultFonts.menuBar,
+        -- color = hs.drawing.color.hammerspoon.osx_green,
+    }
+    -- local visibleStyle = {
+    --     font = hs.styledtext.defaultFonts.menuBar,
+    --     color = hs.drawing.color.hammerspoon.osx_yellow,
+    -- }
+    -- local hasWindowsStyle = {
+    --     font = hs.styledtext.defaultFonts.menuBar,
+    --     color = {
+    --         hex = '#ddd',
+    --     },
+    -- }
+    -- local noWindowsStyle = {
+    --     font = hs.styledtext.defaultFonts.menuBar,
+    --     color = {
+    --         hex = '#666',
+    --     },
+    -- }
+
+    local title
+    if status and status ~= '' then
+        title = hs.styledtext.new(status, focusedStyle)
+    end
+
+    if clockString and clockString ~= '' then
+        if title then
+            title = title .. separator ..
+                        hs.styledtext.new(clockString, focusedStyle)
+        end
+    end
+
+    if title then
+        menuBarItem:setTitle(title)
+    end
+end
+
+
+startUpdatingClockingMenu = function()
+    -- if not updateTimer then
+    --     updateTimer = hs.timer.new(10, updateClockingMenu)
+    -- end
+
+    hs.urlevent.bind('Clocking', urlEvent)
+
+    -- updateTimer:start()
 end
 
 
