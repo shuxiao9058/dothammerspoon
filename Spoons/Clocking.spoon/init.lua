@@ -117,6 +117,18 @@ local function urlEvent(eventName, params)
 
     local state, status, clockString = params.state, params.status,
                                        params.clockString
+    if state == '/' then
+        state = nil
+    end
+
+    if status == '/' then
+        status = nil
+    end
+
+    if clockString == '/' then
+        clockString = nil
+    end
+
     local currentApp = hs.application.get('org.gnu.Emacs')
     if not currentApp then
         logger:d('emacs is not running')
@@ -160,6 +172,8 @@ local function urlEvent(eventName, params)
         if title then
             title = title .. separator ..
                         hs.styledtext.new(clockString, focusedStyle)
+        else
+            title = hs.styledtext.new(clockString, focusedStyle)
         end
     end
 
@@ -173,8 +187,8 @@ startUpdatingClockingMenu = function()
     -- if not updateTimer then
     --     updateTimer = hs.timer.new(10, updateClockingMenu)
     -- end
-
     hs.urlevent.bind('Clocking', urlEvent)
+    -- hs.urlevent.bind('OrgClockUpdate', urlOrgClockUpdateEvent)
 
     -- updateTimer:start()
 end
