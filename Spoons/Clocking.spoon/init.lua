@@ -36,8 +36,11 @@ end
 
 obj.spoonPath = script_path()
 
-local emacsclientPath =
-    '/Users/jiya/workspace/emacs/nextstep/Emacs.app/Contents/MacOS/bin/emacsclient'
+-- local emacsclientPath =
+--     '/Users/jiya/workspace/emacs/nextstep/Emacs.app/Contents/MacOS/bin/emacsclient'
+
+local emacsclientPath = '/Applications/MacPorts/EmacsMac.app/Contents/MacOS/bin/emacsclient'
+
 
 function obj:init()
 end
@@ -187,6 +190,7 @@ startUpdatingClockingMenu = function()
     -- if not updateTimer then
     --     updateTimer = hs.timer.new(10, updateClockingMenu)
     -- end
+
     hs.urlevent.bind('Clocking', urlEvent)
     -- hs.urlevent.bind('OrgClockUpdate', urlOrgClockUpdateEvent)
 

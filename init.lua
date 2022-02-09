@@ -7,6 +7,9 @@ hs.logger.setGlobalLogLevel('debug')
 logger = hs.logger.new('Init', 'debug')
 hs.console.clearConsole()
 
+package.cpath = package.cpath .. ';' ..
+                    ' /Users/jiya/.config/yarn/bin/lib/lua/5.1/?.so'
+
 -- local clocking = require 'clocking'
 -- clocking.init()
 -- local logger = hs.logger.new("init", "debug")
@@ -44,7 +47,6 @@ function isArm64Func()
     return false
 end
 
-
 isArm64 = isArm64Func()
 
 logger:d('isArm64 is:' .. tostring(isArm64 or 'false'))
@@ -53,15 +55,10 @@ require 'app.app'
 
 -- Hotkey definitions
 local HYPER = {
-    'ctrl',
-    'alt',
-    'cmd',
-    'shift',
+    'ctrl', 'alt', 'cmd', 'shift'
 }
 local HYPER_MINUS_SHIFT = {
-    'ctrl',
-    'alt',
-    'cmd',
+    'ctrl', 'alt', 'cmd'
 }
 
 -- Bug-fixed Spoon that handles modal key bindings
@@ -75,7 +72,6 @@ keyUpDown = function(modifiers, key)
     hs.eventtap.keyStroke(modifiers, key, 0)
 end
 
-
 -- Subscribe to the necessary events on the given window filter such that the
 -- given hotkey is enabled for windows that match the window filter and disabled
 -- for windows that don't match the window filter.
@@ -86,17 +82,12 @@ end
 --
 -- Returns nothing.
 enableHotkeyForWindowsMatchingFilter = function(windowFilter, hotkey)
-    windowFilter:subscribe(hs.window.filter.windowFocused, function()
-        hotkey:enable()
-    end
-)
+    windowFilter:subscribe(hs.window.filter.windowFocused,
+                           function() hotkey:enable() end)
 
-    windowFilter:subscribe(hs.window.filter.windowUnfocused, function()
-        hotkey:disable()
-    end
-)
+    windowFilter:subscribe(hs.window.filter.windowUnfocused,
+                           function() hotkey:disable() end)
 end
-
 
 -- local zmc = hs.loadSpoon('zmc')
 
@@ -136,9 +127,6 @@ hs.uploadCrashData(false)
 -- caffeine:clicked()
 
 hs.loadSpoon('ControlEscape'):start() -- Load Hammerspoon bits from https://github.com/jasonrudolph/ControlEscape.spoon"
-
-
-
 
 -- ---------------
 -- Global Bindings
@@ -222,58 +210,27 @@ newTabWithPowerJSONEditor = hs.hotkey.new('cmd', 't', function()
             end
         end
     end
-end
-)
+end)
 
 hs.window.filter.new('Power JSON Editor'):subscribe(hs.window.filter
                                                         .windowFocused,
                                                     function()
     newTabWithPowerJSONEditor:enable()
-end
-):subscribe(hs.window.filter.windowUnfocused, function()
-    newTabWithPowerJSONEditor:disable()
-end
-)
-
-emacsCtrlSpaceSwitchIM = hs.hotkey.new('ctrl', 'space', function()
-    -- hs.application.launchOrFocusByBundleID("com.gnu.Emacs")
-    local topWindow = hs.window:frontmostWindow()
-    if topWindow ~= nil then
-        local topApp = topWindow:application()
-        if topApp ~= nil then
-            local bunderID = topApp:bundleID()
-            if bunderID == 'org.gnu.Emacs' then
-                hs.eventtap.keyStroke({
-                    'ctrl',
-                }, '\\')
-            end
-        end
-    end
-end
-)
-
-hs.window.filter.new('Emacs'):subscribe(hs.window.filter.windowFocused,
-                                        function()
-    emacsCtrlSpaceSwitchIM:enable()
-end
-):subscribe(hs.window.filter.windowUnfocused, function()
-    emacsCtrlSpaceSwitchIM:disable()
-end
-)
+end):subscribe(hs.window.filter.windowUnfocused,
+               function() newTabWithPowerJSONEditor:disable() end)
 
 local clock = hs.loadSpoon('AClock')
 clock.format = '%H:%M:%S'
-clock.textColor = {
-    hex = '#00c403',
-}
+clock.textColor = {hex = '#00c403'}
 clock.textFont = 'Menlo Bold'
 clock.height = 160
 clock.width = 675
 clock:init()
 
 -- hs.inspect(spoon.Clocking)
-hs.loadSpoon('Clocking'):start() 
+hs.loadSpoon('Clocking'):start()
 
+hs.loadSpoon('TimeMachineProgress'):start()
 
 local utils = require 'utils'
 local wifi = require 'wifi'
@@ -301,9 +258,7 @@ hyperfns['-'] = wifi.toggleWifi
 
 -- hyperfns['t'] = require("blj.blj")
 
-for _hotkey, _fn in pairs(hyperfns) do
-    hs.hotkey.bind(HYPER, _hotkey, _fn)
-end
+for _hotkey, _fn in pairs(hyperfns) do hs.hotkey.bind(HYPER, _hotkey, _fn) end
 
 -- Display Hammerspoon logo
 hs.loadSpoon('FadeLogo')
@@ -318,36 +273,27 @@ local function showKeyPress(tapEvent)
     hs.alert.show(charactor, 1.5)
 end
 
-
 local keyTap = hs.eventtap.new({
-    hs.eventtap.event.types.keyDown,
+    hs.eventtap.event.types.keyDown
 }, showKeyPress)
 
 k = hs.hotkey.modal.new({
-    'cmd',
-    'shift',
-    'ctrl',
+    'cmd', 'shift', 'ctrl'
 }, 'P')
 function k:entered()
     hs.alert.show('Enabling Keypress Show Mode', 1.5)
     keyTap:start()
 end
 
+function k:exited() hs.alert.show('Disabling Keypress Show Mode', 1.5) end
 
-function k:exited()
-    hs.alert.show('Disabling Keypress Show Mode', 1.5)
-end
-
-
-k:bind({
-    'cmd',
-    'shift',
-    'ctrl',
-}, 'P', function()
+k:bind({'cmd', 'shift', 'ctrl'}, 'P', function()
     keyTap:stop()
     k:exit()
-end
-)
+end)
+
+local crypto = require('work/crypto')
+crypto:start()
 
 -- -- debug
 -- local osStr = hs.host.operatingSystemVersionString()
