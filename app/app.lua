@@ -1,14 +1,9 @@
 -- Hotkey definitions
 local HYPER = {
-    'ctrl',
-    'alt',
-    'cmd',
-    'shift',
+    'ctrl', 'alt', 'cmd', 'shift'
 }
 local HYPER_MINUS_SHIFT = {
-    'ctrl',
-    'alt',
-    'cmd',
+    'ctrl', 'alt', 'cmd'
 }
 
 local application = require 'hs.application'
@@ -29,7 +24,7 @@ local launchEmacs = function()
     -- local launchEmacsCmd =
     --     [[do shell script "nohup open $HOME/workspace/emacs/nextstep/Emacs.app > /dev/null 2>&1 &"]]
 
-        local launchEmacsCmd =
+    local launchEmacsCmd =
         [[do shell script "nohup /Applications/MacPorts/EmacsMac.app/Contents/MacOS/Emacs.sh > /dev/null 2>&1 &"]]
 
     -- if isArm64 then
@@ -44,7 +39,6 @@ local launchEmacs = function()
     --     "/usr/local/bin/zsh /usr/local/opt/emacs-mac/Emacs.app/Contents/MacOS/Emacs.sh --dump-file=\"$HOME/.emacs.d/.local/cache/dump/emacs.pdump\" --load=\"$HOME/.emacs.d/pdump-init.el\" > /dev/null 2>&1 &"
     -- hs.execute(launchEmacsCmd)
 end
-
 
 local hyperfns = {}
 
@@ -65,14 +59,13 @@ local appSettings = {
         bundleID = 'net.kovidgoyal.kitty',
         lang = 'English',
         launchFunc = nil,
-        maximize = true,
-    },
-    {
+        maximize = true
+    }, {
         key = 'e',
         bundleID = 'org.gnu.Emacs',
         lang = 'English',
         launchFunc = launchEmacs,
-        maximize = true,
+        maximize = false
     }, --  {
     --     key = "g",
     --     bundleID = 'com.google.Chrome',
@@ -90,51 +83,44 @@ local appSettings = {
         bundleID = 'com.vivaldi.Vivaldi',
         lang = 'English',
         launchFunc = nil,
-        maximize = true,
-    },
-    --  {
+        maximize = true
+    }, --  {
     --     key = nil,
     --     bundleID = 'com.netease.163music',
     --     lang = 'Chinese'
     -- },
     { -- key = "w",
         bundleID = 'com.tencent.xinWeChat',
-        lang = 'Chinese',
-    },
-    {
+        lang = 'Chinese'
+    }, {
         key = nil,
         bundleID = 'com.tencent.WeWorkMac',
-        lang = 'Chinese',
-    },
-    {
+        lang = 'Chinese'
+    }, {
         key = 'd',
         bundleID = 'com.kapeli.dashdoc',
-        lang = 'English',
-    },
-    {
+        lang = 'English'
+    }, {
         key = nil,
         bundleID = 'ru.keepcoder.Telegram',
         lang = 'Chinese',
-        maximize = true,
-    },
-    {
+        maximize = true
+    }, {
         key = nil,
         bundleID = 'com.apple.Safari',
         lang = 'English',
-        maximize = true,
-    },
-    {
+        maximize = true
+    }, {
         key = nil,
         bundleID = 'com.devon-technologies.think3',
-        lang = 'Chinese',
+        lang = 'Chinese'
         -- maximize = true
-    },
-    {
+    }, {
         key = nil,
         bundleID = 'com.sublimetext.3',
         lang = 'English',
-        maximize = true,
-    },
+        maximize = true
+    }
 }
 
 hs.urlevent.bind('toggleEmacs', function(eventName, params)
@@ -143,12 +129,11 @@ hs.urlevent.bind('toggleEmacs', function(eventName, params)
         bundleID = 'org.gnu.Emacs',
         lang = 'English',
         launchFunc = launchEmacs,
-        maximize = true,
+        maximize = true
     }
 
     toggleApp(emacsAPPCfg)
-end
-)
+end)
 
 -- Show launch application's keystroke.
 local showAppKeystrokeAlertId = ''
@@ -190,7 +175,6 @@ local function showAppKeystroke()
     end
 end
 
-
 -- first bind hyperfns
 for _, app in pairs(appSettings) do
     local key = app.key
@@ -200,44 +184,30 @@ for _, app in pairs(appSettings) do
         -- local launchFunc = app.launchFunc or function()
         --     toggleApp(app)
         -- end
-        hyperfns[key] = function()
-            toggleApp(app)
-        end
-
+        hyperfns[key] = function() toggleApp(app) end
 
     end
 end
 
 -- maximize window
-hyperfns['M'] = function()
-    toggleMaximized()
-end
-
+hyperfns['M'] = function() toggleMaximized() end
 
 -- Window Hints
 hyperfns['h'] = hs.hints.windowHints
 hyperfns['Z'] = showAppKeystroke
 
 -- then launchApp or refocus application.
-for key, func in pairs(hyperfns) do
-    hotkey.bind(HYPER, key, func)
-end
+for key, func in pairs(hyperfns) do hotkey.bind(HYPER, key, func) end
 
 local updateInputMethod = function()
     local focusedWindow = window.focusedWindow()
-    if not focusedWindow then
-        return
-    end
+    if not focusedWindow then return end
 
     local currentApplication = focusedWindow:application()
-    if not currentApplication then
-        return
-    end
+    if not currentApplication then return end
 
     local currentBundleID = currentApplication:bundleID()
-    if not currentBundleID then
-        return
-    end
+    if not currentBundleID then return end
 
     for _, app in pairs(appSettings) do
         local bundleID = app.bundleID
@@ -265,19 +235,14 @@ local updateInputMethod = function()
     end
 end
 
-
 -- Maximize window when specify application started.
 local windowCreateFilter = hs.window.filter.new():setDefaultFilter()
 windowCreateFilter:subscribe(hs.window.filter.windowCreated,
                              function(win, ttl, last)
-    if not win then
-        return false
-    end
+    if not win then return false end
 
     local currentApplication = win:application()
-    if not currentApplication then
-        return false
-    end
+    if not currentApplication then return false end
 
     local appName = currentApplication:name()
     local currentBundleID = currentApplication:bundleID()
@@ -286,7 +251,7 @@ windowCreateFilter:subscribe(hs.window.filter.windowCreated,
             logger:d('create filter')
             if appName == 'Emacs' then
                 hs.eventtap.keyStroke({
-                    'alt',
+                    'alt'
                 }, 'F10')
             else
                 win:maximize()
@@ -294,8 +259,7 @@ windowCreateFilter:subscribe(hs.window.filter.windowCreated,
             return true
         end
     end
-end
-)
+end)
 
 -- Handle cursor focus and application's screen manage.
 appImWatcher = function(appName, eventType, appObject)
@@ -306,7 +270,6 @@ appImWatcher = function(appName, eventType, appObject)
         updateInputMethod()
     end
 end
-
 
 -- auto change the im for the application
 imWatcher = hs.application.watcher.new(appImWatcher)
@@ -347,16 +310,12 @@ toggleApp = function(app)
             currentApp = hs.application.get(appBundleID)
         end
 
-        if currentApp == nil then
-            return
-        end
+        if currentApp == nil then return end
 
         local wins = currentApp:visibleWindows()
         if #wins > 0 then
             for k, win in pairs(wins) do
-                if win:isMinimized() then
-                    win:unminimize()
-                end
+                if win:isMinimized() then win:unminimize() end
             end
         else
             currentApp:activate()
@@ -371,13 +330,10 @@ toggleApp = function(app)
     end
 end
 
-
 toggleFinder = function()
     local appBundleID = 'com.apple.finder'
     local topWin = hs.window.focusedWindow()
-    if topWin == nil then
-        return
-    end
+    if topWin == nil then return end
     local topApp = topWin:application()
     -- local topApp =hs.application.frontmostApplication()
 
@@ -410,9 +366,7 @@ toggleFinder = function()
         if #wins == 0 then
             hs.application.launchOrFocusByBundleID(appBundleID)
             for _, win in pairs(wins) do
-                if win:isMinimized() then
-                    win:unminimize()
-                end
+                if win:isMinimized() then win:unminimize() end
 
                 win:application():activate(true)
                 win:application():unhide()
@@ -420,9 +374,7 @@ toggleFinder = function()
             end
         else
             for _, win in pairs(wins) do
-                if win:isMinimized() then
-                    win:unminimize()
-                end
+                if win:isMinimized() then win:unminimize() end
 
                 win:application():activate(true)
                 win:application():unhide()
@@ -431,7 +383,6 @@ toggleFinder = function()
         end
     end
 end
-
 
 -- launchEmacs = function()
 --     hs.execute("/Applications/Emacs.app/Contents/MacOS/Emacs.sh --dump-file=\"/Users/jiya/.emacs.d/emacs.pdmp\" --script \"/Users/jiya/.emacs.d/pdump-init.el\"", nil)
@@ -446,24 +397,20 @@ local frameCache = {}
 toggleMaximized = function(bundleID)
     local win = hs.window.focusedWindow()
     -- hs.alert.show("win" .. tostring(win:application():name()))
-    if (win == nil) or (win:id() == nil) then
-        return
-    end
+    if (win == nil) or (win:id() == nil) then return end
 
     local app = win:application()
     local appBundleID = app:bundleID()
     if bundleID and bundleID ~= '' then
         if appBundleID ~= bundleID then
-            logger:df('bundleID(%s) is not equal appBundleID(%s)', 
-                bundleID or '', appBundleID or '')
+            -- logger:df('bundleID(%s) is not equal appBundleID(%s)',
+            --           bundleID or '', appBundleID or '')
             return
         end
     end
 
     if app:name() == 'Emacs' then
-        hs.eventtap.keyStroke({
-            'alt',
-        }, 'F10')
+        hs.eventtap.keyStroke({'alt'}, 'F10')
         -- logger:d('title: ')
         -- logger:d('title: ', w:title())
         -- logger:d('title:', win:title(), ', bundleID:', bundleID, ', app name:', app:name())
