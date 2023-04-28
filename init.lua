@@ -301,3 +301,21 @@ crypto:start()
 
 -- local hostNames = hs.host.names()
 -- logger:d("hostNames: " .. hs.json.encode(hostNames, true))
+
+local gitLens = function(bundleID)
+    local win = hs.window.focusedWindow()
+    if (win == nil) or (win:id() == nil) then return end
+
+    local app = win:application()
+    local appBundleID = app:bundleID()
+    if bundleID and bundleID ~= '' then
+        if appBundleID ~= bundleID then
+            hs.eventtap.keyStroke(HYPER_MINUS_SHIFT, 'g')
+            return
+        end
+    end
+
+    hs.eventtap.keyStroke({'ctrl', 'shift'}, 'g', app)
+end
+
+hs.hotkey.bind(HYPER_MINUS_SHIFT, 'g', function() gitLens("com.microsoft.VSCode") end)
