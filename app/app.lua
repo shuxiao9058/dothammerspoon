@@ -17,6 +17,8 @@ local toggleApp
 local toggleFinder
 local appImWatcher -- 检测输入法
 local toggleMaximized -- 最大化窗口
+local gitLens -- vscode toggle gitLens
+
 local launchEmacs = function()
 
     -- local launchEmacsCmd =
@@ -24,8 +26,10 @@ local launchEmacs = function()
     -- local launchEmacsCmd =
     --     [[do shell script "nohup open $HOME/workspace/emacs/nextstep/Emacs.app > /dev/null 2>&1 &"]]
 
+    -- local launchEmacsCmd =
+    --     [[do shell script "nohup /Applications/MacPorts/EmacsMac.app/Contents/MacOS/Emacs.sh > /dev/null 2>&1 &"]]
     local launchEmacsCmd =
-        [[do shell script "nohup /Applications/MacPorts/EmacsMac.app/Contents/MacOS/Emacs.sh > /dev/null 2>&1 &"]]
+        [[do shell script "open /Applications/MacPorts/Emacs.app"]]
 
     -- if isArm64 then
     -- local launchEmacsCmd =
@@ -55,8 +59,14 @@ local appSettings = {
     --     maximize = true
     -- },
     {
-        key = 't',
+        key = nil,
         bundleID = 'net.kovidgoyal.kitty',
+        lang = 'English',
+        launchFunc = nil,
+        maximize = true
+    }, {
+        key = 't',
+        bundleID = 'com.github.wez.wezterm',
         lang = 'English',
         launchFunc = nil,
         maximize = true
@@ -72,15 +82,21 @@ local appSettings = {
     --     lang = 'English'
     -- },
     -- {
-    --     key = 'f',
+    --     -- key = 'f',
     --     bundleID = 'org.mozilla.firefox',
     --     lang = 'English',
     --     launchFunc = nil,
-    --     maximize = true,
+    --     maximize = true
     -- },
     {
         key = 'v',
-        bundleID = 'com.vivaldi.Vivaldi',
+        bundleID = 'com.microsoft.VSCode',
+        lang = 'English',
+        launchFunc = nil,
+        maximize = true
+    }, {
+        key = 's',
+        bundleID = 'com.stack-beta.io',
         lang = 'English',
         launchFunc = nil,
         maximize = true
@@ -189,8 +205,11 @@ for _, app in pairs(appSettings) do
     end
 end
 
--- maximize window
-hyperfns['M'] = function() toggleMaximized() end
+-- -- maximize window
+-- hyperfns['M'] = function() toggleMaximized() end
+
+--
+-- hyperfns['g'] = function() gitLens() end
 
 -- Window Hints
 hyperfns['h'] = hs.hints.windowHints
@@ -222,7 +241,7 @@ local updateInputMethod = function()
 
                 if lang == 'English' and
                     (currentLayout ~= 'U.S.' or currentInputMethod) then
-                    -- logger:d('bundleID is: ' .. bundleID .. ',switch to english')
+                    logger:d('bundleID is: ' .. bundleID .. ',switch to english')
                     hs.keycodes.setLayout('U.S.')
                 elseif lang == 'Chinese' and currentInputMethod ~= 'Squirrel' then
                     -- logger:d('bundleID is: ' .. bundleID .. ',switch to chinese')
@@ -304,9 +323,6 @@ toggleApp = function(app)
         -- logger:d('currentApp is: ' .. tostring(currentApp))
         if currentApp == nil then
             launchFunc()
-            -- if app.maximize == true then
-            --     toggleMaximized(appBundleID)
-            -- end
             currentApp = hs.application.get(appBundleID)
         end
 
@@ -390,38 +406,3 @@ end
 --     --     "/usr/local/bin/zsh /Applications/Emacs.app/Contents/MacOS/Emacs.sh")
 -- end
 
--- Window cache for window maximize toggler
-local frameCache = {}
-
--- Toggle current window between its normal size, and being maximized
-toggleMaximized = function(bundleID)
-    local win = hs.window.focusedWindow()
-    -- hs.alert.show("win" .. tostring(win:application():name()))
-    if (win == nil) or (win:id() == nil) then return end
-
-    local app = win:application()
-    local appBundleID = app:bundleID()
-    if bundleID and bundleID ~= '' then
-        if appBundleID ~= bundleID then
-            -- logger:df('bundleID(%s) is not equal appBundleID(%s)',
-            --           bundleID or '', appBundleID or '')
-            return
-        end
-    end
-
-    if app:name() == 'Emacs' then
-        hs.eventtap.keyStroke({'alt'}, 'F10')
-        -- logger:d('title: ')
-        -- logger:d('title: ', w:title())
-        -- logger:d('title:', win:title(), ', bundleID:', bundleID, ', app name:', app:name())
-        return
-    end
-
-    if frameCache[win:id()] then
-        win:setFrame(frameCache[win:id()])
-        frameCache[win:id()] = nil
-    else
-        frameCache[win:id()] = win:frame()
-        win:maximize()
-    end
-end
