@@ -2,13 +2,15 @@
 -- Logger setup
 require('functions')
 
+require("window")
+
 hs.logger.setGlobalLogLevel('debug')
 -- hs.logger.defaultLogLevel = 'warning'
 logger = hs.logger.new('Init', 'debug')
 hs.console.clearConsole()
 
 package.cpath = package.cpath .. ';' ..
-                    ' /Users/jiya/.config/yarn/bin/lib/lua/5.1/?.so'
+    ' /Users/jiya/.config/yarn/bin/lib/lua/5.1/?.so'
 
 -- local clocking = require 'clocking'
 -- clocking.init()
@@ -66,6 +68,7 @@ hs.loadSpoon('ModalMgr')
 -- Modified Spoon that manages modal state and UI.
 hs.loadSpoon('MiroWindowsManager')
 
+
 keyUpDown = function(modifiers, key)
     -- Un-comment & reload config to log each keystroke that we're triggering
     -- self.logger:d('Sending keystroke:', hs.inspect(modifiers), key)
@@ -83,10 +86,10 @@ end
 -- Returns nothing.
 enableHotkeyForWindowsMatchingFilter = function(windowFilter, hotkey)
     windowFilter:subscribe(hs.window.filter.windowFocused,
-                           function() hotkey:enable() end)
+        function() hotkey:enable() end)
 
     windowFilter:subscribe(hs.window.filter.windowUnfocused,
-                           function() hotkey:disable() end)
+        function() hotkey:disable() end)
 end
 
 -- local zmc = hs.loadSpoon('zmc')
@@ -115,7 +118,7 @@ hs.automaticallyCheckForUpdates(true)
 hs.preferencesDarkMode(true)
 hs.accessibilityState(true) -- show System Preferences if Accessibility is not enabled for Hammerspoon
 hs.dockIcon(false)
-hs.menuIcon(false)
+hs.menuIcon(true)
 hs.consoleOnTop(true)
 hs.uploadCrashData(false)
 
@@ -205,7 +208,7 @@ newTabWithPowerJSONEditor = hs.hotkey.new('cmd', 't', function()
             local bunderID = topApp:bundleID()
             if bunderID == 'com.xujiwei.powerjsoneditor' then
                 local newTabAppleScriptFile = hs.configdir ..
-                                                  '/applescript/powerjsoneditor_newtab.applescript'
+                    '/applescript/powerjsoneditor_newtab.applescript'
                 hs.osascript.applescriptFromFile(newTabAppleScriptFile)
             end
         end
@@ -213,15 +216,15 @@ newTabWithPowerJSONEditor = hs.hotkey.new('cmd', 't', function()
 end)
 
 hs.window.filter.new('Power JSON Editor'):subscribe(hs.window.filter
-                                                        .windowFocused,
-                                                    function()
-    newTabWithPowerJSONEditor:enable()
-end):subscribe(hs.window.filter.windowUnfocused,
-               function() newTabWithPowerJSONEditor:disable() end)
+    .windowFocused,
+    function()
+        newTabWithPowerJSONEditor:enable()
+    end):subscribe(hs.window.filter.windowUnfocused,
+    function() newTabWithPowerJSONEditor:disable() end)
 
 local clock = hs.loadSpoon('AClock')
 clock.format = '%H:%M:%S'
-clock.textColor = {hex = '#00c403'}
+clock.textColor = { hex = '#00c403' }
 clock.textFont = 'Menlo Bold'
 clock.height = 160
 clock.width = 675
@@ -247,6 +250,8 @@ hs.window.animationDuration = 0
 local hyperfns = {}
 
 hyperfns['L'] = hs.caffeinate.lockScreen
+
+hyperfns["R"] = hs.reload
 
 -- -- Increase / decrease flux intensity.
 -- hyperfns[','] = flux.decreaseLevel
@@ -287,7 +292,7 @@ end
 
 function k:exited() hs.alert.show('Disabling Keypress Show Mode', 1.5) end
 
-k:bind({'cmd', 'shift', 'ctrl'}, 'P', function()
+k:bind({ 'cmd', 'shift', 'ctrl' }, 'P', function()
     keyTap:stop()
     k:exit()
 end)
@@ -295,27 +300,32 @@ end)
 local crypto = require('work/crypto')
 crypto:start()
 
+-- local mail = require('work/mail')
+-- mail:start()
+
+-- local convert_trans = require('my/convert_trans')
+-- convert_trans:start()
+
+-- debug only
+-- log all window
+
+-- local allWindows = hs.window.allWindows()
+-- if allWindows then
+--     for _, w in ipairs(allWindows) do
+--         -- logger:d('title: ', w:title())
+--         local app = w:application()
+--         if app then
+--             local bundleID = app:bundleID()
+--             logger:d('title:', w:title(), ', bundleID:', bundleID, ', app name:', app:name())
+--         end
+--     end
+-- end
+
+-- crypto:decrypt_user_name('8ed7ded2617e618616c63ebcfc572159')
+
 -- -- debug
 -- local osStr = hs.host.operatingSystemVersionString()
 -- logger:d("os str: " .. (osStr or 'nil'))
 
 -- local hostNames = hs.host.names()
 -- logger:d("hostNames: " .. hs.json.encode(hostNames, true))
-
-local gitLens = function(bundleID)
-    local win = hs.window.focusedWindow()
-    if (win == nil) or (win:id() == nil) then return end
-
-    local app = win:application()
-    local appBundleID = app:bundleID()
-    if bundleID and bundleID ~= '' then
-        if appBundleID ~= bundleID then
-            hs.eventtap.keyStroke(HYPER_MINUS_SHIFT, 'g')
-            return
-        end
-    end
-
-    hs.eventtap.keyStroke({'ctrl', 'shift'}, 'g', app)
-end
-
-hs.hotkey.bind(HYPER_MINUS_SHIFT, 'g', function() gitLens("com.microsoft.VSCode") end)

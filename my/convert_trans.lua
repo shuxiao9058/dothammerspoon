@@ -47,9 +47,9 @@ local function urlEvent(eventName, params)
         end
 
         if string.find(arr[2], '商户消费') then
-            arr[2] = arr[2] .. '-' .. '退款'
-        else
             arr[2] = arr[3] .. '-' .. '退款'
+        else
+            arr[2] = arr[2] .. '-' .. '退款'
         end
 
         arr[5] = '收入'

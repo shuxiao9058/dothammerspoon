@@ -70,13 +70,24 @@ local appSettings = {
         lang = 'English',
         launchFunc = nil,
         maximize = true
-    }, {
+    }, -- {
+       --  key = 'e',
+       --  bundleID = 'com.github.wez.wezterm',
+       --  -- bundleID = 'org.gnu.Emacs',
+       --  lang = 'English',
+       --  -- launchFunc = launchEmacs,
+       --  maximize = false
+       -- }
+    -- ,
+    {
         key = 'e',
+        -- bundleID = 'com.github.wez.wezterm',
         bundleID = 'org.gnu.Emacs',
         lang = 'English',
-        launchFunc = launchEmacs,
+        -- launchFunc = launchEmacs,
         maximize = false
-    }, --  {
+    },
+    --  {
     --     key = "g",
     --     bundleID = 'com.google.Chrome',
     --     lang = 'English'
@@ -405,4 +416,3 @@ end
 --     -- hs.execute(
 --     --     "/usr/local/bin/zsh /Applications/Emacs.app/Contents/MacOS/Emacs.sh")
 -- end
-

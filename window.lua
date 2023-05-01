@@ -1,16 +1,22 @@
+local M = {}
 
 
+local json_encode = hs.json.encode
+local json_decode = hs.json.decode
 
+
+local max_space = 6
+local remove_extra_spaces
 -- local stackline = require "stackline"
 -- stackline:init()
 
 -- require("hs.ipc")
 
-local function getFrontApplicationName() 
-    local win = hs.window.focusedWindow()
-    if (win == nil) or (win:id() == nil) then return end
-    local app = win:application()
-    return app:name() 
+local function getFrontApplicationName()
+  local win = hs.window.focusedWindow()
+  if (win == nil) or (win:id() == nil) then return end
+  local app = win:application()
+  return app:name()
 end
 
 -- function yabai(args)
@@ -80,7 +86,7 @@ end
 --   hs.hotkey.bind({"cmd", "alt"}, "0", function() yabai({"-m", "space", "--focus", "0"}) end)
 
 --   -- mirror tree y-axis
---   hs.hotkey.bind("alt", "y", function() 
+--   hs.hotkey.bind("alt", "y", function()
 --     if isEmacs() then return end
 --     yabai({"-m", "space", "--mirror", "y-axis"}) end)
 
@@ -117,10 +123,10 @@ end
 -- end
 
 local HYPER = {
-    'ctrl', 'alt', 'cmd', 'shift'
+  'ctrl', 'alt', 'cmd', 'shift'
 }
 local HYPER_MINUS_SHIFT = {
-    'ctrl', 'alt', 'cmd'
+  'ctrl', 'alt', 'cmd'
 }
 
 local yabaiPath = '/opt/local/bin/yabai'
@@ -133,34 +139,56 @@ local function _start(self)
   return self.deepest_task:start()
 end
 
-local function _catch(self, path, argstr)
+
+local function _catch(self, path, argstr, callback)
   local task = hs.task.new(path, nil, hs.fnutils.split(argstr, '%s'))
   self.task:setCallback(function(exitCode, stdOut, stdErr)
     if exitCode ~= 0 then
       task:start()
     end
+
+    callback = callback or self.callback
+    if callback then
+      callback(exitCode, stdOut, stdErr)
+    end
   end)
 
   self.task = task
   return self
 end
 
-local function _next(self, path, argstr)
+local function _next(self, path, argstr, callback)
   local task = hs.task.new(path, nil, hs.fnutils.split(argstr, '%s'))
   self.task:setCallback(function(exitCode, stdOut, stdErr)
     if exitCode == 0 then
       task:start()
     end
-    -- log.df("exitCode: %d", exitCode)
-    log.d("stdOut: " .. (stdOut or 'nil') .. ", stdErr: " .. (stdErr or 'nil'))
+
+    callback = callback or self.callback
+    if callback then
+      callback(exitCode, stdOut, stdErr)
+    end
   end)
 
   self.task = task
   return self
 end
 
-local function call(path, argstr)
+local function call(path, argstr, callback)
   local task = hs.task.new(path, nil, hs.fnutils.split(argstr, '%s'))
+  task:setCallback(function(exitCode, stdOut, stdErr)
+    if exitCode ~= 0 then
+      log.ef('error exec command: %s, exitCode: %d, stdOut: %s, stdErr: %s',
+        argstr, exitCode, stdOut, stdErr)
+      -- else
+      --   log.df("execute success, argstr: %s stdOut: %s", argstr, stdOut)
+    end
+
+    if callback then
+      callback(exitCode, stdOut, stdErr)
+    end
+  end
+  )
 
   return {
     deepest_task = task,
@@ -168,96 +196,216 @@ local function call(path, argstr)
     next = _next,
     catch = _catch,
     start = _start,
+    callback = callback
   }
 end
 
+-- -- 同步执行命令，返回 json
+-- local callsync = function(path, argstr)
+--   local cmd = path .. ' ' .. argstr
+--   local output, status, _, _ = hs.execute(cmd)
+--   log.df("cmd: %s, output: %s", cmd, tostring(output))
+--   if status then
+--     local result = json_decode(output)
+--     return result, status
+--   end
+
+--   return output, status
+-- end
+
+
+local function setup_space(idx, name)
+  if not idx or not name then
+    return
+  end
+
+  call(yabaiPath, "-m query --spaces --space " .. tostring(idx),
+    function(exitCode, _, _)
+      if exitCode ~= 0 then
+        call(yabaiPath, "-m space --create")
+      end
+    end)
+
+  hs.timer.doAfter(5, function()
+    call(yabaiPath, string.format("-m space %d --lable %s", idx, name))
+  end)
+end
+
+-- 删除多余的 space
+remove_extra_spaces = function()
+  call(yabaiPath, '-m query --spaces',
+    function(exitCode, stdOut, _)
+      if exitCode == 0 and stdOut then
+        local spaces = json_decode(stdOut)
+        if spaces and #spaces > max_space then
+          for i = #spaces, max_space, -1 do
+            log.df("space(%d): %s", i, json_encode(spaces[i]))
+            local index = spaces[i].index or i
+            local cmd_str = "-m space --destroy " .. tostring(index)
+            call(yabaiPath, cmd_str):start()
+            log.df("remove space: %s, cmd_str: %s", tostring(index), cmd_str)
+          end
+        end
+      end
+    end):start()
+end
+
+local spaceMap = {
+  { idx = 1, name = "emacs" },
+  { idx = 2, name = "code" },
+  { idx = 3, name = "web" },
+  { idx = 4, name = "social" }
+}
+
+remove_extra_spaces()
+
+for key, value in pairs(spaceMap) do
+  if value and value.idx and value.name then
+    setup_space(value.idx, value.name)
+  end
+end
+
 -- focus next and prev
-hs.hotkey.bind({'alt'}, "N", function()
+hs.hotkey.bind({ 'alt' }, "N", function()
   call(yabaiPath, '-m window --focus stack.next')
-  :catch(yabaiPath, '-m window --focus stack.first')
-  :catch(yabaiPath, '-m window --focus next')
-  :catch(yabaiPath, '-m window --focus first')
-  :start()
+      :catch(yabaiPath, '-m window --focus stack.first')
+      :catch(yabaiPath, '-m window --focus next')
+      :catch(yabaiPath, '-m window --focus first')
+      :start()
 end)
 
-hs.hotkey.bind({'alt', 'shift'}, "N", function()
+hs.hotkey.bind({ 'alt', 'shift' }, "N", function()
   call(yabaiPath, '-m window --focus stack.prev')
-  :catch(yabaiPath, '-m window --focus stack.last')
-  :catch(yabaiPath, '-m window --focus prev')
-  :catch(yabaiPath, '-m window --focus last')
-  :start()
+      :catch(yabaiPath, '-m window --focus stack.last')
+      :catch(yabaiPath, '-m window --focus prev')
+      :catch(yabaiPath, '-m window --focus last')
+      :start()
 end)
 
--- make floating window fill right-half of screen
-hs.hotkey.bind({"shift", "alt"}, "right", function() call(yabaiPath, "-m window --grid 1:2:1:0:1:1") end)
+-- make floating window fill half of screen
+hs.hotkey.bind({ "shift", "alt" }, "right", function() call(yabaiPath, "-m window --grid 1:2:1:0:1:1"):start() end)
+hs.hotkey.bind({ "shift", "alt" }, "left", function() call(yabaiPath, "-m window --grid 1:2:0:1:1:1"):start() end)
+hs.hotkey.bind({ "shift", "alt" }, "down", function() call(yabaiPath, "-m window --grid 2:1:1:1:1:1"):start() end)
+hs.hotkey.bind({ "shift", "alt" }, "up", function() call(yabaiPath, "-m window --grid 2:1:1:0:1:1"):start() end)
+
+-- destroy desktop
+hs.hotkey.bind({ "cmd", "alt" }, "w", function() call(yabaiPath, "-m space --destroy"):start() end)
+-- rotate tree
+hs.hotkey.bind("alt", "r", function() call(yabaiPath, "-m space --rotate 90"):start() end)
+
+
+-- fast focus desktop
+hs.hotkey.bind({ "cmd", "alt" }, "x", function() call(yabaiPath, "-m pace --focus recent"):start() end)
+hs.hotkey.bind({ "cmd", "alt" }, "z", function() call(yabaiPath, "-m pace -focus prev"):start() end)
+hs.hotkey.bind({ "cmd", "alt" }, "c", function() call(yabaiPath, "-m pace -focus next"):start() end)
+hs.hotkey.bind({ "cmd", "alt" }, "1", function() call(yabaiPath, "-m pace -focus 1"):start() end)
+hs.hotkey.bind({ "cmd", "alt" }, "2", function() call(yabaiPath, "-m pace -focus 2"):start() end)
+hs.hotkey.bind({ "cmd", "alt" }, "3", function() call(yabaiPath, "-m pace -focus 3"):start() end)
+hs.hotkey.bind({ "cmd", "alt" }, "4", function() call(yabaiPath, "-m space -focus 4"):start() end)
+hs.hotkey.bind({ "cmd", "alt" }, "5", function() call(yabaiPath, "-m space --focus 5"):start() end)
+hs.hotkey.bind({ "cmd", "alt" }, "6", function() call(yabaiPath, "-m space --focus 6"):start() end)
+hs.hotkey.bind({ "cmd", "alt" }, "7", function() call(yabaiPath, "-m space --focus 7"):start() end)
+hs.hotkey.bind({ "cmd", "alt" }, "8", function() call(yabaiPath, "-m space -focus 8"):start() end)
+hs.hotkey.bind({ "cmd", "alt" }, "9", function() call(yabaiPath, "-m space -focus 9"):start() end)
+hs.hotkey.bind({ "cmd", "alt" }, "0", function() call(yabaiPath, "-m space --focus 0"):start() end)
+
 
 -- focus directional
-hs.hotkey.bind({'alt'}, "H", function() call(yabaiPath, '-m window --focus west'):start() end)
-hs.hotkey.bind({'alt'}, "J", function() call(yabaiPath, '-m window --focus south'):start() end)
-hs.hotkey.bind({'alt'}, "K", function() call(yabaiPath, '-m window --focus north'):start() end)
-hs.hotkey.bind({'alt'}, "L", function() call(yabaiPath, '-m window --focus east'):start() end)
+hs.hotkey.bind({ 'alt' }, "H", function() call(yabaiPath, '-m window --focus west'):start() end)
+hs.hotkey.bind({ 'alt' }, "J", function() call(yabaiPath, '-m window --focus south'):start() end)
+hs.hotkey.bind({ 'alt' }, "K", function() call(yabaiPath, '-m window --focus north'):start() end)
+hs.hotkey.bind({ 'alt' }, "L", function() call(yabaiPath, '-m window --focus east'):start() end)
 
 -- swap directional
-hs.hotkey.bind({'shift', 'alt'}, "H", function() call(yabaiPath, '-m window --swap west'):start() end)
-hs.hotkey.bind({'shift', 'alt'}, "J", function() call(yabaiPath, '-m window --swap south'):start() end)
-hs.hotkey.bind({'shift', 'alt'}, "K", function() call(yabaiPath, '-m window --swap north'):start() end)
-hs.hotkey.bind({'shift', 'alt'}, "L", function() call(yabaiPath, '-m window --swap east'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "H", function() call(yabaiPath, '-m window --swap west'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "J", function() call(yabaiPath, '-m window --swap south'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "K", function() call(yabaiPath, '-m window --swap north'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "L", function() call(yabaiPath, '-m window --swap east'):start() end)
+hs.hotkey.bind({ 'alt' }, "return", function() call(yabaiPath, '-m window --swap first'):start() end)
+
+-- -- focus desktop
+-- hs.hotkey.bind({'alt'}, "1", function() call(yabaiPath, '-m space --focus 1'):start() end)
+-- hs.hotkey.bind({'alt'}, "2", function() call(yabaiPath, '-m space --focus 2'):start() end)
+-- hs.hotkey.bind({'alt'}, "3", function() call(yabaiPath, '-m space --focus 3'):start() end)
+-- hs.hotkey.bind({'alt'}, "4", function() call(yabaiPath, '-m space --focus 4'):start() end)
+-- hs.hotkey.bind({'alt'}, "5", function() call(yabaiPath, '-m space --focus 5'):start() end)
+-- hs.hotkey.bind({'alt'}, "6", function() call(yabaiPath, '-m space --focus 6'):start() end)
+-- hs.hotkey.bind({'alt'}, "7", function() call(yabaiPath, '-m space --focus 7'):start() end)
+-- hs.hotkey.bind({'alt'}, "8", function() call(yabaiPath, '-m space --focus 8'):start() end)
+-- hs.hotkey.bind({'alt'}, "9", function() call(yabaiPath, '-m space --focus 9'):start() end)
 
 -- focus desktop
-hs.hotkey.bind({'alt'}, "1", function() call(yabaiPath, '-m space --focus 1'):start() end)
-hs.hotkey.bind({'alt'}, "2", function() call(yabaiPath, '-m space --focus 2'):start() end)
-hs.hotkey.bind({'alt'}, "3", function() call(yabaiPath, '-m space --focus 3'):start() end)
-hs.hotkey.bind({'alt'}, "4", function() call(yabaiPath, '-m space --focus 4'):start() end)
-hs.hotkey.bind({'alt'}, "5", function() call(yabaiPath, '-m space --focus 5'):start() end)
-hs.hotkey.bind({'alt'}, "6", function() call(yabaiPath, '-m space --focus 6'):start() end)
-hs.hotkey.bind({'alt'}, "7", function() call(yabaiPath, '-m space --focus 7'):start() end)
-hs.hotkey.bind({'alt'}, "8", function() call(yabaiPath, '-m space --focus 8'):start() end)
-hs.hotkey.bind({'alt'}, "9", function() call(yabaiPath, '-m space --focus 9'):start() end)
+hs.hotkey.bind({ 'alt' }, "1", function() call(yabaiPath, '-m space --focus 1'):start() end)
+hs.hotkey.bind({ 'alt' }, "2", function() call(yabaiPath, '-m space --focus 2'):start() end)
+hs.hotkey.bind({ 'alt' }, "3", function() call(yabaiPath, '-m space --focus 3'):start() end)
+hs.hotkey.bind({ 'alt' }, "4", function() call(yabaiPath, '-m space --focus 4'):start() end)
+hs.hotkey.bind({ 'alt' }, "5", function() call(yabaiPath, '-m space --focus 5'):start() end)
+hs.hotkey.bind({ 'alt' }, "6", function() call(yabaiPath, '-m space --focus 6'):start() end)
+hs.hotkey.bind({ 'alt' }, "7", function() call(yabaiPath, '-m space --focus 7'):start() end)
+hs.hotkey.bind({ 'alt' }, "8", function() call(yabaiPath, '-m space --focus 8'):start() end)
+hs.hotkey.bind({ 'alt' }, "9", function() call(yabaiPath, '-m space --focus 9'):start() end)
+
 
 -- move window to desktop
-hs.hotkey.bind({'shift', 'alt'}, "1", function() call(yabaiPath, '-m window --space 1'):start() end)
-hs.hotkey.bind({'shift', 'alt'}, "2", function() call(yabaiPath, '-m window --space 2'):start() end)
-hs.hotkey.bind({'shift', 'alt'}, "3", function() call(yabaiPath, '-m window --space 3'):start() end)
-hs.hotkey.bind({'shift', 'alt'}, "4", function() call(yabaiPath, '-m window --space 4'):start() end)
-hs.hotkey.bind({'shift', 'alt'}, "5", function() call(yabaiPath, '-m window --space 5'):start() end)
-hs.hotkey.bind({'shift', 'alt'}, "6", function() call(yabaiPath, '-m window --space 6'):start() end)
-hs.hotkey.bind({'shift', 'alt'}, "7", function() call(yabaiPath, '-m window --space 7'):start() end)
-hs.hotkey.bind({'shift', 'alt'}, "8", function() call(yabaiPath, '-m window --space 8'):start() end)
-hs.hotkey.bind({'shift', 'alt'}, "9", function() call(yabaiPath, '-m window --space 9'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "1", function() call(yabaiPath, '-m window --space 1'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "2", function() call(yabaiPath, '-m window --space 2'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "3", function() call(yabaiPath, '-m window --space 3'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "4", function() call(yabaiPath, '-m window --space 4'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "5", function() call(yabaiPath, '-m window --space 5'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "6", function() call(yabaiPath, '-m window --space 6'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "7", function() call(yabaiPath, '-m window --space 7'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "8", function() call(yabaiPath, '-m window --space 8'):start() end)
+hs.hotkey.bind({ 'shift', 'alt' }, "9", function() call(yabaiPath, '-m window --space 9'):start() end)
 
 -- toggles
-hs.hkey.bind({'alt'}, "D", function() call(yabaiPath, '-m window --toggle zoom-parent'):start() end)
+hs.hotkey.bind({ 'alt' }, "D", function() call(yabaiPath, '-m window --toggle zoom-parent'):start() end)
+
+-- hs.hotkey.bind("alt", "y", function()
+-- 		       local appName = getFrontApplicationName()
+-- 			 if appName == "Emacs" then
+-- 				 log:d("front application: " .. (appName or 'nil'))
+-- 				          hs.eventtap.keyStroke({'alt'}, 'y')
+-- 				 return end
+--     call(yabaiPath "-m pace -mirror -axis"):start() end)
+
+-- mirror tree x-axis
+--  hs.hotkey.bind("alt", "x", function()
+--   if getFrontApplicationName() == "Emacs" then return end
+--   ("-m", "space", "--mirror", "x-axis"}) end)
 
 -- hs.hotkey.bind({'alt'}, "F", function() call(yabaiPath, '-m window --toggle zoom-fullscreen'):start() end)
-hs.hotkey.bind(HYPER, "M", function() 
-    if getFrontApplicationName() == "Emacs" then
-         hs.eventtap.keyStroke({'alt'}, 'F10')
-    else
-      call(yabaiPath, '-m window --toggle zoom-fullscreen'):start()
-    end
-   end )
-hs.hotkey.bind({'alt'}, "E", function() call(yabaiPath, '-m window --toggle split'):start() end)
+hs.hotkey.bind(HYPER, "M", function()
+  if getFrontApplicationName() == "Emacs" then
+    hs.eventtap.keyStroke({ 'alt' }, 'F10')
+  else
+    call(yabaiPath, '-m window --toggle zoom-fullscreen'):start()
+  end
+end)
+hs.hotkey.bind({ 'alt' }, "E", function() call(yabaiPath, '-m window --toggle split'):start() end)
 
-hs.hotkey.bind({'alt'}, "T", function()
+hs.hotkey.bind({ 'alt' }, "T", function()
   call(yabaiPath, '-m window --toggle float')
-  :next(yabaiPath, '-m window --grid 4:4:1:1:2:2')
-  :start()
+  -- :next(yabaiPath, '-m window --grid 4:4:1:1:2:2')
+      :next(yabaiPath, '-m window --grid 7:7:1:1:5:5')
+  -- :next(yabaiPath, '-m window --grid 2:2:1:0:1:1')
+  -- :next(yabaiPath, '-m window --grid 1:1:0:0:1:1')
+      :start()
 end)
 
-hs.hotkey.bind({'alt'}, "P", function()
+hs.hotkey.bind({ 'alt' }, "P", function()
   call(yabaiPath, '-m window --toggle sticky')
-  :next(yabaiPath, '-m window --toggle topmost')
-  :next(yabaiPath, '-m window --toggle pip')
-  :start()
+      :next(yabaiPath, '-m window --toggle topmost')
+      :next(yabaiPath, '-m window --toggle pip')
+      :start()
 end)
 
 -- stack window
-hs.hotkey.bind({'ctrl', 'alt'}, "H", function() call(yabaiPath, '-m window --stack west'):start() end)
-hs.hotkey.bind({'ctrl', 'alt'}, "J", function() call(yabaiPath, '-m window --stack south'):start() end)
-hs.hotkey.bind({'ctrl', 'alt'}, "K", function() call(yabaiPath, '-m window --stack north'):start() end)
-hs.hotkey.bind({'ctrl', 'alt'}, "L", function() call(yabaiPath, '-m window --stack east'):start() end)
+hs.hotkey.bind({ 'ctrl', 'alt' }, "H", function() call(yabaiPath, '-m window --stack west'):start() end)
+hs.hotkey.bind({ 'ctrl', 'alt' }, "J", function() call(yabaiPath, '-m window --stack south'):start() end)
+hs.hotkey.bind({ 'ctrl', 'alt' }, "K", function() call(yabaiPath, '-m window --stack north'):start() end)
+hs.hotkey.bind({ 'ctrl', 'alt' }, "L", function() call(yabaiPath, '-m window --stack east'):start() end)
 
-hs.hotkey.bind({'ctrl', 'alt'}, "D", function()
+hs.hotkey.bind({ 'ctrl', 'alt' }, "D", function()
   local output, _, _, _ = hs.execute(yabaiPath .. ' -m query --displays --display')
   log.d(output)
   output, _, _, _ = hs.execute(yabaiPath .. ' -m query --spaces --space')
@@ -267,3 +415,4 @@ hs.hotkey.bind({'ctrl', 'alt'}, "D", function()
 end)
 
 
+return M

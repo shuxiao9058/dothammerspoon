@@ -2,6 +2,12 @@
 local module = {}
 module.logger = hs.logger.new('applicationWatcher.lua')
 
+local HYPER = {
+    'ctrl', 'alt', 'cmd', 'shift'
+}
+local HYPER_MINUS_SHIFT = {
+    'ctrl', 'alt', 'cmd'
+}
 
 local emacsCtrlSpaceSwitchIM = hs.hotkey.new('ctrl', 'space', function()
     -- hs.application.launchOrFocusByBundleID("com.gnu.Emacs")
@@ -16,13 +22,26 @@ local emacsCtrlSpaceSwitchIM = hs.hotkey.new('ctrl', 'space', function()
             logger:d('bunderID is: ', bunderID)
             if bunderID == 'org.gnu.Emacs' then
                 hs.eventtap.keyStroke({
-                    'ctrl',
+                    'ctrl'
                 }, '\\')
             end
         end
     end
-end
-)
+end)
+
+local vscodeGitLens = hs.hotkey.new(HYPER_MINUS_SHIFT, "g", function()
+    local win = hs.window.focusedWindow()
+    if (win == nil) or (win:id() == nil) then return end
+
+    local app = win:application()
+    local appBundleID = app:bundleID()
+
+    if appBundleID == 'com.microsoft.VSCode' then
+        hs.eventtap.keyStroke({
+            'ctrl', 'shift'
+        }, 'g', app)
+    end
+end)
 
 -- -- Define a callback function to be called when application events happen
 -- local function emacsIMWatcherCallback(appName, eventType, appObject)
@@ -44,24 +63,32 @@ end
 -- NOTE: Use local function for any internal funciton not exported (not included as a part of the return)
 local function applicationWatcher(appName, eventType, appObject)
     local emacsAppName = 'Emacs'
+    local vsCodeAppName = "Code"
+
     local isEmacsApp = emacsAppName == appName
-    
+    local isVscodeApp = vsCodeAppName == appName
+
     if (eventType == hs.application.watcher.activated) then
         if (appName == "Finder") then
-            appObject:selectMenuItem({"Window", "Bring All to Front"}) -- Bring all Finder windows forward when one gets activated
+            appObject:selectMenuItem({
+                "Window",
+                "Bring All to Front"
+            }) -- Bring all Finder windows forward when one gets activated
         elseif isEmacsApp then
-          emacsCtrlSpaceSwitchIM:enable()
+            emacsCtrlSpaceSwitchIM:enable()
+        elseif isVscodeApp then
+            vscodeGitLens:enable()
         end
     elseif (eventType == hs.application.watcher.deactivated) then
-        if isEmacsApp then
-          emacsCtrlSpaceSwitchIM:disable()
-        end
-    elseif (eventType == hs.application.watcher.launched) then
-        if isEmacsApp then
-                hs.eventtap.keyStroke({
-                    'alt',
-                }, 'F10')
-        end
+        if isEmacsApp then emacsCtrlSpaceSwitchIM:disable() end
+        if isVscodeApp then vscodeGitLens:disable() end
+
+        -- elseif (eventType == hs.application.watcher.launched) then
+        --     if isEmacsApp then
+        --             hs.eventtap.keyStroke({
+        --                 'alt',
+        --             }, 'F10')
+        --     end
     end
 end
 
