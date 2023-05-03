@@ -8,6 +8,7 @@ local M = {}
 M.logger = hs.logger.new('applicationWatcher.lua')
 
 local yabai = require('window')
+local myApp = require("app.app")
 
 local log = M.logger
 log.setLogLevel('debug')
@@ -106,9 +107,10 @@ end
 
 local emacsFocusIn = function(app)
     -- move to space 2
-    emacsCtrlSpaceSwitchIM:enable()
     moveAppToSpace(app, "Emacs")
-    hs.timer.doAfter(3, function()
+    emacsCtrlSpaceSwitchIM:enable()
+    myApp:updateInputMethod()
+    hs.timer.doAfter(1, function()
         -- make maximaze window
         local win = app and app:focusedWindow()
         if win then
@@ -129,12 +131,14 @@ local applicationWatcher = function(appName, event, app)
     local isEmacsApp = emacsAppName == appName
     local isVscodeApp = vsCodeAppName == appName
 
-    log.df("event is, app: %s, event: %s, isEmacsApp: %s, isdDeactivated: %s",
-        appName, event, tostring(isEmacsApp), tostring(event == hs.application.watcher.deactivated))
+    -- log.df("event is, app: %s, event: %s, isEmacsApp: %s, isdDeactivated: %s",
+    --     appName, event, tostring(isEmacsApp), tostring(event == hs.application.watcher.deactivated))
 
     -- if (event == hs.application.watcher.activated) then
     if (event == hs.application.watcher.deactivated) then
-        if isEmacsApp then emacsFocusOut(app) end
+        if isEmacsApp then
+            -- emacsCtrlSpaceSwitchIM:disable()
+        end
         if isVscodeApp then vscodeGitLens:disable() end
         -- elseif (eventType == hs.application.watcher.launched) then
         --     if isEmacsApp then
@@ -149,7 +153,7 @@ local applicationWatcher = function(appName, event, app)
                 "Bring All to Front"
             }) -- Bring all Finder windows forward when one gets activated
         elseif isEmacsApp then
-            emacsFocusIn(app)
+            -- emacsCtrlSpaceSwitchIM:enable()
         elseif isVscodeApp then
             vscodeGitLens:enable()
         end
