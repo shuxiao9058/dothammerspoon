@@ -2,8 +2,6 @@
 -- Logger setup
 require('functions')
 
-require("window")
-
 hs.logger.setGlobalLogLevel('debug')
 -- hs.logger.defaultLogLevel = 'warning'
 logger = hs.logger.new('Init', 'debug')
@@ -14,30 +12,6 @@ package.cpath = package.cpath .. ';' ..
 
 -- local clocking = require 'clocking'
 -- clocking.init()
--- local logger = hs.logger.new("init", "debug")
-
--- require('clipboard')
-
--- local PassChooser = hs.loadSpoon('PassChooser')
-
--- -- Bind ?+p
--- PassChooser:bindHotkeys({
---     show = {
---         {
---             'cmd',
---         },
---         'p',
---     },
--- })
-
--- -- Optional config
--- PassChooser:init({
---     -- Clear password from clipboard after N seconds
---     -- Defaults to 0 which disables this
---     clearAfter = 10,
---     -- Path to GPG-encrypted passwords
---     storePath = '~/.password-store/',
--- })
 
 function isArm64Func()
     local out = hs.execute('uname -m')
@@ -53,7 +27,7 @@ isArm64 = isArm64Func()
 
 logger:d('isArm64 is:' .. tostring(isArm64 or 'false'))
 
-require 'app.app'
+require('app.app'):start()
 
 -- Hotkey definitions
 local HYPER = {
@@ -97,7 +71,7 @@ end
 -- local ModalWrapper = require 'modal-wrapper'
 
 -- windowHighlight = require("windowHighlight").start()
-applicationWatcher = require('applicationWatcher').start()
+require('applicationWatcher'):start()
 
 hs.hints.style = 'vimperator'
 
@@ -119,7 +93,7 @@ hs.preferencesDarkMode(true)
 hs.accessibilityState(true) -- show System Preferences if Accessibility is not enabled for Hammerspoon
 hs.dockIcon(false)
 hs.menuIcon(true)
-hs.consoleOnTop(true)
+hs.consoleOnTop(false)
 hs.uploadCrashData(false)
 
 -- local caffeine = hs.loadSpoon("Caffeine")
@@ -129,7 +103,7 @@ hs.uploadCrashData(false)
 -- -- caffeine default on
 -- caffeine:clicked()
 
-hs.loadSpoon('ControlEscape'):start() -- Load Hammerspoon bits from https://github.com/jasonrudolph/ControlEscape.spoon"
+-- hs.loadSpoon('ControlEscape'):start() -- Load Hammerspoon bits from https://github.com/jasonrudolph/ControlEscape.spoon"
 
 -- ---------------
 -- Global Bindings
@@ -321,11 +295,11 @@ crypto:start()
 --     end
 -- end
 
--- crypto:decrypt_user_name('8ed7ded2617e618616c63ebcfc572159')
-
 -- -- debug
 -- local osStr = hs.host.operatingSystemVersionString()
 -- logger:d("os str: " .. (osStr or 'nil'))
 
 -- local hostNames = hs.host.names()
 -- logger:d("hostNames: " .. hs.json.encode(hostNames, true))
+
+require("window"):start()

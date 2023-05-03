@@ -1,3 +1,6 @@
+local M = {}
+
+
 -- Hotkey definitions
 local HYPER = {
     'ctrl', 'alt', 'cmd', 'shift'
@@ -15,12 +18,11 @@ local hints = require 'hs.hints'
 -- function declaration
 local toggleApp
 local toggleFinder
-local appImWatcher -- 检测输入法
+local appImWatcher    -- 检测输入法
 local toggleMaximized -- 最大化窗口
-local gitLens -- vscode toggle gitLens
+local gitLens         -- vscode toggle gitLens
 
 local launchEmacs = function()
-
     -- local launchEmacsCmd =
     --     [[do shell script "nohup /Applications/Emacs.app/Contents/MacOS/Emacs --dump-file=\"$HOME/.emacs.d/.local/cache/dump/emacs.pdump\" --load=\"$HOME/.emacs.d/pdump-init.el\" > /dev/null 2>&1 &"]]
     -- local launchEmacsCmd =
@@ -29,7 +31,7 @@ local launchEmacs = function()
     -- local launchEmacsCmd =
     --     [[do shell script "nohup /Applications/MacPorts/EmacsMac.app/Contents/MacOS/Emacs.sh > /dev/null 2>&1 &"]]
     local launchEmacsCmd =
-        [[do shell script "open /Applications/MacPorts/Emacs.app"]]
+    [[do shell script "open /Applications/MacPorts/Emacs.app"]]
 
     -- if isArm64 then
     -- local launchEmacsCmd =
@@ -65,19 +67,19 @@ local appSettings = {
         launchFunc = nil,
         maximize = true
     }, {
-        key = 't',
-        bundleID = 'com.github.wez.wezterm',
-        lang = 'English',
-        launchFunc = nil,
-        maximize = true
-    }, -- {
-       --  key = 'e',
-       --  bundleID = 'com.github.wez.wezterm',
-       --  -- bundleID = 'org.gnu.Emacs',
-       --  lang = 'English',
-       --  -- launchFunc = launchEmacs,
-       --  maximize = false
-       -- }
+    key = 't',
+    bundleID = 'com.github.wez.wezterm',
+    lang = 'English',
+    launchFunc = nil,
+    maximize = true
+}, -- {
+    --  key = 'e',
+    --  bundleID = 'com.github.wez.wezterm',
+    --  -- bundleID = 'org.gnu.Emacs',
+    --  lang = 'English',
+    --  -- launchFunc = launchEmacs,
+    --  maximize = false
+    -- }
     -- ,
     {
         key = 'e',
@@ -85,7 +87,8 @@ local appSettings = {
         bundleID = 'org.gnu.Emacs',
         lang = 'English',
         -- launchFunc = launchEmacs,
-        maximize = false
+        maximize = false,
+        spaceId = 2,
     },
     --  {
     --     key = "g",
@@ -106,61 +109,51 @@ local appSettings = {
         launchFunc = nil,
         maximize = true
     }, {
-        key = 's',
-        bundleID = 'com.stack-beta.io',
-        lang = 'English',
-        launchFunc = nil,
-        maximize = true
-    }, --  {
+    key = 's',
+    bundleID = 'com.stack-beta.io',
+    lang = 'English',
+    launchFunc = nil,
+    maximize = true
+}, --  {
     --     key = nil,
     --     bundleID = 'com.netease.163music',
     --     lang = 'Chinese'
     -- },
-    { -- key = "w",
+    {
+        -- key = "w",
         bundleID = 'com.tencent.xinWeChat',
         lang = 'Chinese'
     }, {
-        key = nil,
-        bundleID = 'com.tencent.WeWorkMac',
-        lang = 'Chinese'
-    }, {
-        key = 'd',
-        bundleID = 'com.kapeli.dashdoc',
-        lang = 'English'
-    }, {
-        key = nil,
-        bundleID = 'ru.keepcoder.Telegram',
-        lang = 'Chinese',
-        maximize = true
-    }, {
-        key = nil,
-        bundleID = 'com.apple.Safari',
-        lang = 'English',
-        maximize = true
-    }, {
-        key = nil,
-        bundleID = 'com.devon-technologies.think3',
-        lang = 'Chinese'
-        -- maximize = true
-    }, {
-        key = nil,
-        bundleID = 'com.sublimetext.3',
-        lang = 'English',
-        maximize = true
-    }
+    key = nil,
+    bundleID = 'com.tencent.WeWorkMac',
+    lang = 'Chinese'
+}, {
+    key = 'd',
+    bundleID = 'com.kapeli.dashdoc',
+    lang = 'English'
+}, {
+    key = nil,
+    bundleID = 'ru.keepcoder.Telegram',
+    lang = 'Chinese',
+    maximize = true
+}, {
+    key = nil,
+    bundleID = 'com.apple.Safari',
+    lang = 'English',
+    maximize = true
+}, {
+    key = nil,
+    bundleID = 'com.devon-technologies.think3',
+    lang = 'Chinese'
+    -- maximize = true
+}, {
+    key = nil,
+    bundleID = 'com.sublimetext.3',
+    lang = 'English',
+    maximize = true
+}
 }
 
-hs.urlevent.bind('toggleEmacs', function(eventName, params)
-    local emacsAPPCfg = {
-        key = 'e',
-        bundleID = 'org.gnu.Emacs',
-        lang = 'English',
-        launchFunc = launchEmacs,
-        maximize = true
-    }
-
-    toggleApp(emacsAPPCfg)
-end)
 
 -- Show launch application's keystroke.
 local showAppKeystrokeAlertId = ''
@@ -188,13 +181,12 @@ local function showAppKeystroke()
                         keystroke = keystroke .. '\n' .. keystrokeString
                     end
                 end
-
             end
         end
 
         showAppKeystrokeAlertId = hs.alert.show(keystroke,
-                                                hs.alert.defaultStyle,
-                                                hs.screen.mainScreen(), 10)
+            hs.alert.defaultStyle,
+            hs.screen.mainScreen(), 10)
     else
         -- Otherwise hide keystroke alert.
         hs.alert.closeSpecific(showAppKeystrokeAlertId)
@@ -207,27 +199,12 @@ for _, app in pairs(appSettings) do
     local key = app.key
     local bundleID = app.bundleID
     if key and bundleID then
-
         -- local launchFunc = app.launchFunc or function()
         --     toggleApp(app)
         -- end
         hyperfns[key] = function() toggleApp(app) end
-
     end
 end
-
--- -- maximize window
--- hyperfns['M'] = function() toggleMaximized() end
-
---
--- hyperfns['g'] = function() gitLens() end
-
--- Window Hints
-hyperfns['h'] = hs.hints.windowHints
-hyperfns['Z'] = showAppKeystroke
-
--- then launchApp or refocus application.
-for key, func in pairs(hyperfns) do hotkey.bind(HYPER, key, func) end
 
 local updateInputMethod = function()
     local focusedWindow = window.focusedWindow()
@@ -268,42 +245,33 @@ end
 -- Maximize window when specify application started.
 local windowCreateFilter = hs.window.filter.new():setDefaultFilter()
 windowCreateFilter:subscribe(hs.window.filter.windowCreated,
-                             function(win, ttl, last)
-    if not win then return false end
+    function(win, ttl, last)
+        if not win then return false end
 
-    local currentApplication = win:application()
-    if not currentApplication then return false end
+        local currentApplication = win:application()
+        if not currentApplication then return false end
 
-    local appName = currentApplication:name()
-    local currentBundleID = currentApplication:bundleID()
-    for _, app in ipairs(appSettings) do
-        if currentBundleID == app.bundleID and app.maximize then
-            logger:d('create filter')
-            if appName == 'Emacs' then
-                hs.eventtap.keyStroke({
-                    'alt'
-                }, 'F10')
-            else
-                win:maximize()
+        local appName = currentApplication:name()
+        local currentBundleID = currentApplication:bundleID()
+        for _, app in ipairs(appSettings) do
+            if currentBundleID == app.bundleID and app.maximize then
+                logger:d('create filter')
+                if appName == 'Emacs' then
+                    -- hs.eventtap.keyStroke({
+                    --     'alt'
+                    -- }, 'F10')
+
+                    -- local spaces = hs.spaces.allSpaces()
+                    -- hs.spaces.moveWindowToSpace()
+                    -- hs.spaces.gotoSpace(spaceID)
+                else
+                    win:maximize()
+                end
+                return true
             end
-            return true
         end
-    end
-end)
+    end)
 
--- Handle cursor focus and application's screen manage.
-appImWatcher = function(appName, eventType, appObject)
-    -- Move cursor to center of application when application activated.
-    -- Then don't need move cursor between screens.
-    if (eventType == hs.application.watcher.activated) then
-        -- Just adjust cursor postion if app open by user keyboard.
-        updateInputMethod()
-    end
-end
-
--- auto change the im for the application
-imWatcher = hs.application.watcher.new(appImWatcher)
-imWatcher:start()
 
 -- toggle App
 toggleApp = function(app)
@@ -387,7 +355,7 @@ toggleFinder = function()
         -- local wins=app:visibleWindows()
         if not isWinExists then
             wins = hs.window.filter.new(false):setAppFilter('Finder', {})
-                       :getWindows()
+                :getWindows()
         end
 
         if #wins == 0 then
@@ -416,3 +384,46 @@ end
 --     -- hs.execute(
 --     --     "/usr/local/bin/zsh /Applications/Emacs.app/Contents/MacOS/Emacs.sh")
 -- end
+
+-- Handle cursor focus and application's screen manage.
+M.appImWatcher = function(appName, eventType, appObject)
+    -- Move cursor to center of application when application activated.
+    -- Then don't need move cursor between screens.
+    if (eventType == hs.application.watcher.activated) then
+        -- Just adjust cursor postion if app open by user keyboard.
+        updateInputMethod()
+    end
+end
+
+
+function M:start()
+    hs.urlevent.bind('toggleEmacs', function(eventName, params)
+        local emacsAPPCfg = {
+            key = 'e',
+            bundleID = 'org.gnu.Emacs',
+            lang = 'English',
+            launchFunc = launchEmacs,
+            maximize = false
+        }
+
+        toggleApp(emacsAPPCfg)
+    end)
+
+    -- -- maximize window
+    -- hyperfns['M'] = function() toggleMaximized() end
+
+    --
+    -- hyperfns['g'] = function() gitLens() end
+
+    -- Window Hints
+    hyperfns['h'] = hs.hints.windowHints
+    hyperfns['Z'] = showAppKeystroke
+
+    -- then launchApp or refocus application.
+    for key, func in pairs(hyperfns) do hotkey.bind(HYPER, key, func) end
+
+    -- auto change the im for the application
+    hs.application.watcher.new(M.appImWatcher):start()
+end
+
+return M
