@@ -1,5 +1,7 @@
 local M = {}
 
+local log = hs.logger.new('app')
+log.setLogLevel('debug')
 
 -- Hotkey definitions
 local HYPER = {
@@ -228,7 +230,7 @@ function M:updateInputMethod()
 				--              (currentInputMethod or 'nil'))
 
 				if lang == 'English' and
-				    (currentLayout ~= 'U.S.' or currentInputMethod) then
+					(currentLayout ~= 'U.S.' or currentInputMethod) then
 					logger:d('bundleID is: ' .. bundleID .. ',switch to english')
 					hs.keycodes.setLayout('U.S.')
 				elseif lang == 'Chinese' and currentInputMethod ~= 'Squirrel' then
@@ -245,14 +247,27 @@ end
 -- Window cache for window maximize toggler
 local frameCache = {}
 
-function M:toggleMaximized(win, startup)
+function M:toggleMaximized(win, startup, force)
 	local app
 	if not win then
 		app = hs.application.frontmostApplication()
 		win = app:mainWindow()
+	else
+		app = win:application()
 	end
 
+	if not app then
+		return
+	end
+
+	local appName = app:name()
+
 	if not win then
+		return
+	end
+
+	if not win:isMaximizable() then
+		log.ef("win can not maximaze, appName: %s", appName)
 		return
 	end
 
@@ -267,11 +282,14 @@ function M:toggleMaximized(win, startup)
 
 		-- win:maximize()
 		if frameCache[win:id()] then
-			win:setFrame(frameCache[win:id()])
-			frameCache[win:id()] = nil
+			if not force then
+				win:setFrame(frameCache[win:id()])
+				frameCache[win:id()] = nil
+			else
+				log.df("force maximize window, appName: %s", appName)
+			end
 		else
 			frameCache[win:id()] = win:frame()
-			win:maximize()
 		end
 		return
 	end
@@ -301,7 +319,7 @@ local windowCreateFilter = hs.window.filter.new():setDefaultFilter()
 windowCreateFilter:subscribe(hs.window.filter.windowCreated,
 	function(win, ttl, last)
 		-- if not win then return false end
-		M:toggleMaximized(win, true)
+		M:toggleMaximized(win, true, nil)
 	end)
 
 
@@ -367,7 +385,7 @@ toggleFinder = function()
 	-- The desktop window has no id, a role of AXScrollArea and no subrole
 	-- and #topApp:visibleWindows()>0
 	if topApp ~= nil and topApp:bundleID() == appBundleID and topWin:role() ~=
-	    'AXScrollArea' then
+		'AXScrollArea' then
 		topApp:hide()
 	else
 		finderApp = hs.application.get(appBundleID)
@@ -386,7 +404,7 @@ toggleFinder = function()
 		-- local wins=app:visibleWindows()
 		if not isWinExists then
 			wins = hs.window.filter.new(false):setAppFilter('Finder', {})
-			    :getWindows()
+				:getWindows()
 		end
 
 		if #wins == 0 then

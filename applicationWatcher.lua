@@ -130,6 +130,7 @@ local applicationWatcher = function(appName, event, app)
 
     local isEmacsApp = emacsAppName == appName
     local isVscodeApp = vsCodeAppName == appName
+    local isBrowersApp = appName == "Google Chrome" or appName == "Firefox" or appName == "Stack Next SE"
 
     -- log.df("event is, app: %s, event: %s, isEmacsApp: %s, isdDeactivated: %s",
     --     appName, event, tostring(isEmacsApp), tostring(event == hs.application.watcher.deactivated))
@@ -137,7 +138,7 @@ local applicationWatcher = function(appName, event, app)
     -- if (event == hs.application.watcher.activated) then
     if (event == hs.application.watcher.deactivated) then
         if isEmacsApp then
-            -- emacsCtrlSpaceSwitchIM:disable()
+            emacsCtrlSpaceSwitchIM:disable()
         end
         if isVscodeApp then vscodeGitLens:disable() end
         -- elseif (eventType == hs.application.watcher.launched) then
@@ -153,9 +154,12 @@ local applicationWatcher = function(appName, event, app)
                 "Bring All to Front"
             }) -- Bring all Finder windows forward when one gets activated
         elseif isEmacsApp then
-            -- emacsCtrlSpaceSwitchIM:enable()
+            emacsCtrlSpaceSwitchIM:enable()
         elseif isVscodeApp then
             vscodeGitLens:enable()
+        elseif isBrowersApp then
+            -- make frontMostApp maximum
+            yabai:force_fullscreen()
         end
     end
 end
