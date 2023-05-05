@@ -93,7 +93,7 @@ hs.preferencesDarkMode(true)
 hs.accessibilityState(true) -- show System Preferences if Accessibility is not enabled for Hammerspoon
 hs.dockIcon(false)
 hs.menuIcon(true)
-hs.consoleOnTop(false)
+hs.consoleOnTop(true)
 hs.uploadCrashData(false)
 
 -- local caffeine = hs.loadSpoon("Caffeine")
