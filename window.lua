@@ -151,8 +151,7 @@ function M:my_toggle_fullscreen(force)
 		if space and space.type == "bsp" then
 			local window = M:get_yabai_window()
 			if window then
-				log.df("window is: %s", json_encode(window))
-
+				-- log.df("window is: %s", json_encode(window))
 				if force then
 					if window["is-native-fullscreen"] then
 						return

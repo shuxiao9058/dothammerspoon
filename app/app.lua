@@ -25,9 +25,9 @@ local hints = require("hs.hints")
 -- function declaration
 local toggleApp
 local toggleFinder
-local appImWatcher -- 检测输入法
+local appImWatcher    -- 检测输入法
 local toggleMaximized -- 最大化窗口
-local gitLens -- vscode toggle gitLens
+local gitLens         -- vscode toggle gitLens
 
 local launchEmacs = function()
 	-- local launchEmacsCmd =
@@ -276,14 +276,8 @@ function M:toggleMaximized(win, startup, force)
 		return
 	end
 
-	local appName = app:name()
 
 	if not win then
-		return
-	end
-
-	if not win:isMaximizable() then
-		log.ef("win can not maximaze, appName: %s", appName)
 		return
 	end
 
@@ -291,9 +285,32 @@ function M:toggleMaximized(win, startup, force)
 	if not currentApplication then
 		return false
 	end
-	local appName = currentApplication:name()
+
+	local appName = app:name()
 	local currentBundleID = currentApplication:bundleID()
-	if not startup then
+	if startup then
+		for _, app in ipairs(appSettings) do
+			if currentBundleID == app.bundleID and app.maximize then
+				if not win:isMaximizable() then
+					log.ef("win can not maximaze, appName: %s", appName)
+					return
+				end
+
+				-- logger:d('create filter')
+				if appName == "Emacs" then
+					-- hs.eventtap.keyStroke({
+					--     'alt'
+					-- }, 'F10')
+					-- local spaces = hs.spaces.allSpaces()
+					-- hs.spaces.moveWindowToSpace()
+					-- hs.spaces.gotoSpace(spaceID)
+				else
+					win:maximize()
+				end
+				return true
+			end
+		end
+	else
 		-- if win:isMinimized() then
 		-- 	win = win:unminimize()
 		-- end
@@ -310,25 +327,6 @@ function M:toggleMaximized(win, startup, force)
 			frameCache[win:id()] = win:frame()
 		end
 		return
-	end
-
-	if startup then
-		for _, app in ipairs(appSettings) do
-			if currentBundleID == app.bundleID and app.maximize then
-				-- logger:d('create filter')
-				if appName == "Emacs" then
-					-- hs.eventtap.keyStroke({
-					--     'alt'
-					-- }, 'F10')
-					-- local spaces = hs.spaces.allSpaces()
-					-- hs.spaces.moveWindowToSpace()
-					-- hs.spaces.gotoSpace(spaceID)
-				else
-					win:maximize()
-				end
-				return true
-			end
-		end
 	end
 end
 
@@ -409,7 +407,7 @@ toggleFinder = function()
 	if topApp ~= nil and topApp:bundleID() == appBundleID and topWin:role() ~= "AXScrollArea" then
 		topApp:hide()
 	else
-		finderApp = hs.application.get(appBundleID)
+		local finderApp = hs.application.get(appBundleID)
 		if finderApp == nil then
 			hs.application.launchOrFocusByBundleID(appBundleID)
 			return

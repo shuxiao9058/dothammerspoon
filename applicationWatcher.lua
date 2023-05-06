@@ -190,7 +190,8 @@ local applicationWatcher = function(appName, event, app)
 
 	local isEmacsApp = emacsAppName == appName
 	local isVscodeApp = vsCodeAppName == appName
-	local isBrowersApp = appName == "Google Chrome" or appName == "Firefox" or appName == "Stack Next SE"
+	local isBrowersApp = appName == "Google Chrome" or appName == "Firefox" or appName == "Stack Next SE" or
+	    appName == 'Safari'
 
 	-- log.df("event is, app: %s, event: %s, isEmacsApp: %s, isdDeactivated: %s",
 	--     appName, event, tostring(isEmacsApp), tostring(event == hs.application.watcher.deactivated))
