@@ -113,8 +113,6 @@ local moveAppToSpace = function(app, destSpaceLabel)
 	end
 
 	local appName = app:name()
-	-- check space
-	-- local win = app:mainWindow()
 	local win = app:focusedWindow()
 	if not win then
 		log.ef("win is nil, appName: %s", appName)
@@ -170,13 +168,13 @@ local emacsFocusIn = function(app)
 	moveAppToSpace(app, "Emacs")
 	emacsCtrlSpaceSwitchIM:enable()
 	myApp:updateInputMethod()
-	hs.timer.doAfter(1, function()
-		-- make maximaze window
-		local win = app and app:focusedWindow()
-		if win then
-			win:maximize()
-		end
-	end)
+	-- hs.timer.doAfter(1, function()
+	-- 	-- make maximaze window
+	-- 	local win = app and app:focusedWindow()
+	-- 	if win then
+	-- 		win:maximize()
+	-- 	end
+	-- end)
 end
 
 local emacsFocusOut = function(app)
@@ -191,7 +189,7 @@ local applicationWatcher = function(appName, event, app)
 	local isEmacsApp = emacsAppName == appName
 	local isVscodeApp = vsCodeAppName == appName
 	local isBrowersApp = appName == "Google Chrome" or appName == "Firefox" or appName == "Stack Next SE" or
-	    appName == 'Safari'
+			appName == 'Safari'
 
 	-- log.df("event is, app: %s, event: %s, isEmacsApp: %s, isdDeactivated: %s",
 	--     appName, event, tostring(isEmacsApp), tostring(event == hs.application.watcher.deactivated))

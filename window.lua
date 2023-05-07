@@ -381,18 +381,18 @@ function M:start()
 
 	hs.hotkey.bind({ "alt" }, "T", function()
 		yabai_helper
-		    :call("-m window --toggle float") -- :next(yabaiPath, '-m window --grid 4:4:1:1:2:2')
-		    :next("-m window --grid 7:7:1:1:5:5") -- :next(yabaiPath, '-m window --grid 2:2:1:0:1:1')			-- :next(yabaiPath, '-m window --grid 1:1:0:0:1:1')
+				:call("-m window --toggle float")   -- :next(yabaiPath, '-m window --grid 4:4:1:1:2:2')
+				:next("-m window --grid 7:7:1:1:5:5") -- :next(yabaiPath, '-m window --grid 2:2:1:0:1:1')			-- :next(yabaiPath, '-m window --grid 1:1:0:0:1:1')
 
-		    :start()
+				:start()
 	end)
 
 	hs.hotkey.bind({ "alt" }, "P", function()
 		yabai_helper
-		    :call("-m window --toggle sticky")
-		    :next("-m window --toggle topmost")
-		    :next("-m window --toggle pip")
-		    :start()
+				:call("-m window --toggle sticky")
+				:next("-m window --toggle topmost")
+				:next("-m window --toggle pip")
+				:start()
 	end)
 
 	-- stack window
