@@ -1,3 +1,4 @@
+---@diagnostic disable: unused-local
 local M = {}
 
 local json_encode = hs.json.encode
@@ -17,7 +18,11 @@ local function getFrontApplicationName()
 		return
 	end
 	local app = win:application()
-	return app:name()
+	if app then
+		return app:name()
+	end
+
+	return nil
 end
 
 local HYPER = {
@@ -59,6 +64,7 @@ end
 local _get_active_yabai_space = function(self)
 	local yabai_spaces = self:get_all_yabai_spaces(true)
 	if yabai_spaces == nil then
+		log.df("yabai_spaces is nil")
 		return
 	end
 
@@ -381,18 +387,17 @@ function M:start()
 
 	hs.hotkey.bind({ "alt" }, "T", function()
 		yabai_helper
-				:call("-m window --toggle float")   -- :next(yabaiPath, '-m window --grid 4:4:1:1:2:2')
-				:next("-m window --grid 7:7:1:1:5:5") -- :next(yabaiPath, '-m window --grid 2:2:1:0:1:1')			-- :next(yabaiPath, '-m window --grid 1:1:0:0:1:1')
-
-				:start()
+			:call("-m window --toggle float") -- :next(yabaiPath, '-m window --grid 4:4:1:1:2:2')
+			:next("-m window --grid 7:7:1:1:5:5") -- :next(yabaiPath, '-m window --grid 2:2:1:0:1:1')			-- :next(yabaiPath, '-m window --grid 1:1:0:0:1:1')
+			:start()
 	end)
 
 	hs.hotkey.bind({ "alt" }, "P", function()
 		yabai_helper
-				:call("-m window --toggle sticky")
-				:next("-m window --toggle topmost")
-				:next("-m window --toggle pip")
-				:start()
+			:call("-m window --toggle sticky")
+			:next("-m window --toggle topmost")
+			:next("-m window --toggle pip")
+			:start()
 	end)
 
 	-- stack window

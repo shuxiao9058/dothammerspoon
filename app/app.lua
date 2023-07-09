@@ -25,9 +25,9 @@ local hints = require("hs.hints")
 -- function declaration
 local toggleApp
 local toggleFinder
-local appImWatcher    -- 检测输入法
+local appImWatcher -- 检测输入法
 local toggleMaximized -- 最大化窗口
-local gitLens         -- vscode toggle gitLens
+local gitLens -- vscode toggle gitLens
 
 local launchEmacs = function()
 	-- local launchEmacsCmd =
@@ -139,7 +139,7 @@ local appSettings = {
 	},
 	{
 		key = "d",
-		bundleID = "com.kapeli.dashdoc",
+		bundleID = "org.zealdocs.zeal",
 		lang = "English",
 	},
 	{
@@ -276,7 +276,6 @@ function M:toggleMaximized(win, startup, force)
 		return
 	end
 
-
 	if not win then
 		return
 	end
@@ -311,11 +310,10 @@ function M:toggleMaximized(win, startup, force)
 			end
 		end
 	else
-		-- if win:isMinimized() then
-		-- 	win = win:unminimize()
-		-- end
+		if win:isMinimized() then
+			win = win:unminimize()
+		end
 
-		-- win:maximize()
 		if frameCache[win:id()] then
 			if not force then
 				win:setFrame(frameCache[win:id()])
@@ -325,6 +323,7 @@ function M:toggleMaximized(win, startup, force)
 			end
 		else
 			frameCache[win:id()] = win:frame()
+			win:maximize()
 		end
 		return
 	end
