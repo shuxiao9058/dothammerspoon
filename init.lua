@@ -102,9 +102,9 @@ hs.menuIcon(true)
 hs.consoleOnTop(true)
 hs.uploadCrashData(false)
 
--- local caffeine = hs.loadSpoon("Caffeine")
--- caffeine:bindHotkeys({toggle = {HYPER, "C"}})
--- caffeine:start()
+local caffeine = hs.loadSpoon("Caffeine")
+caffeine:bindHotkeys({toggle = {HYPER, "C"}})
+caffeine:start()
 
 -- -- caffeine default on
 -- caffeine:clicked()
