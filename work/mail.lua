@@ -68,7 +68,7 @@ getMailContent = function(searchMail)
   end
 end
 
-function textToImage(input, color)
+local function textToImage(input, color)
   if type(input) == "number" then input = utf8.char(input) end
   local styledInput = hs.styledtext
                         .new(input, {font = {name = "SF Pro", size = 100}, color = color})
@@ -98,9 +98,9 @@ local function notmuchNotify(newMailCount)
           if not threadId or threadId < mailThreadId then
             maxThreadId = mailThreadId
           else
-            logger:d("break forloop, threadId", threadId, ", maxThreadId: ", maxThreadId,
-                     ", mailThreadId: ", mailThreadId)
-            break
+            logger:d("continue next thread, current threadId", threadId, ", maxThreadId: ",
+                     maxThreadId, ", mailThreadId: ", mailThreadId)
+            goto continue
           end
         end
 
@@ -112,6 +112,8 @@ local function notmuchNotify(newMailCount)
                              (mail.date_relative or "")
           info = info .. "\n" .. mailInfo
         end
+
+        ::continue::
       end
     end
 
@@ -176,12 +178,17 @@ local function checkUnreadMail(eventName, params)
   end
 
   -- new mail received
-  output, status, _, _ = hs.execute("notmuch count " .. search, true)
+  local type, rc
+  output, status, type, rc = hs.execute("notmuch count " .. search, true)
   if output then
     -- logger:d('output is: ' .. output .. ', diff: ' .. (output - output))
     output = string.gsub(output, "[%s\n\r]+", "")
     if output then
       output = tonumber(output)
+      if not output then
+        logger:e('output is nil, status: ', status, ', type: ', type, ', rc: ', rc)
+        return
+      end
     else
       output = 0
     end
@@ -189,7 +196,7 @@ local function checkUnreadMail(eventName, params)
     if status and allMailCount ~= output then
       local oldAllMailCount = allMailCount
       if oldAllMailCount ~= output then
-        if oldAllMailCount then
+        if oldAllMailCount and output then
           local newMailCount = output - oldAllMailCount
           if newMailCount > 0 then
             allMailCount = output

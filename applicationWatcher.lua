@@ -201,7 +201,7 @@ local applicationWatcher = function(appName, event, app)
       vscodeGitLens:enable()
     elseif isBrowersApp then
       -- make frontMostApp maximum
-      yabai:force_fullscreen()
+      -- yabai:force_fullscreen()
     end
   end
 end
