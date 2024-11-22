@@ -119,14 +119,18 @@ local function notmuchNotify(newMailCount)
 
     if maxThreadId and maxThreadId > 0 then threadId = maxThreadId end
 
+    local mail = 'mail'
+    if newMailCount > 1 then mail = 'mails' end
     local notifyAttr = {
       alwaysPresent = true,
       setIdImage = textToImage(0x10020E),
       title = "Notmuch new mail notifications",
-      subTitle = string.format("Received %d new mails since last refresh.", newMailCount),
+      subTitle = string.format("Received %d new " .. mail .. " since last refresh.", newMailCount),
       informativeText = info,
       withdrawAfter = 0
     }
+
+    logger:d('notify mail, title: ' .. notifyAttr.subTitle)
 
     local notify = hs.notify.new(nil, notifyAttr)
     notify:alwaysPresent(true):autoWithdraw(false):send()
@@ -184,6 +188,7 @@ local function checkUnreadMail(eventName, params)
     -- logger:d('output is: ' .. output .. ', diff: ' .. (output - output))
     output = string.gsub(output, "[%s\n\r]+", "")
     if output then
+      -- logger:d('output is: ' .. output)
       output = tonumber(output)
       if not output then
         logger:e('output is nil, status: ', status, ', type: ', type, ', rc: ', rc)

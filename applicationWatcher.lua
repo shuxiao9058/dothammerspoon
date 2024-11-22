@@ -12,8 +12,8 @@ local myApp = require("app.app")
 local log = M.logger
 log.setLogLevel('debug')
 
-local HYPER = {'ctrl', 'alt', 'cmd', 'shift'}
-local HYPER_MINUS_SHIFT = {'ctrl', 'alt', 'cmd'}
+local HYPER = { 'ctrl', 'alt', 'cmd', 'shift' }
+local HYPER_MINUS_SHIFT = { 'ctrl', 'alt', 'cmd' }
 
 local emacsCtrlSpaceSwitchIM = hs.hotkey.new('ctrl', 'space', function()
   local topWindow = hs.window:frontmostWindow()
@@ -22,7 +22,7 @@ local emacsCtrlSpaceSwitchIM = hs.hotkey.new('ctrl', 'space', function()
     if topApp ~= nil then
       local bunderID = topApp:bundleID()
       logger:d('bunderID is: ', bunderID)
-      if bunderID == 'org.gnu.Emacs' then hs.eventtap.keyStroke({'ctrl'}, '\\') end
+      if bunderID == 'org.gnu.Emacs' then hs.eventtap.keyStroke({ 'ctrl' }, '\\') end
     end
   end
 end)
@@ -35,7 +35,7 @@ local vscodeGitLens = hs.hotkey.new(HYPER_MINUS_SHIFT, "g", function()
   local appBundleID = app:bundleID()
   -- log.ef('appBundleID is: ' .. appBundleID)
   if appBundleID == 'com.microsoft.VSCode' or appBundleID == 'com.microsoft.VSCodeInsiders' then
-    hs.eventtap.keyStroke({'ctrl', 'shift'}, 'g', app)
+    hs.eventtap.keyStroke({ 'ctrl', 'shift' }, 'g', app)
   end
 end)
 
@@ -177,7 +177,7 @@ local applicationWatcher = function(appName, event, app)
   local isEmacsApp = emacsAppName == appName
   local isVscodeApp = vsCodeAppName == appName
   local isBrowersApp = appName == "Google Chrome" or appName == "Firefox" or appName ==
-                         "Stack Next SE" or appName == 'Safari'
+      "Stack Next SE" or appName == 'Safari'
 
   -- log.df("event is, app: %s, event: %s, isEmacsApp: %s, isdDeactivated: %s",
   --     appName, event, tostring(isEmacsApp), tostring(event == hs.application.watcher.deactivated))
@@ -194,7 +194,7 @@ local applicationWatcher = function(appName, event, app)
     --     end
   else
     if (appName == "Finder") then
-      app:selectMenuItem({"Window", "Bring All to Front"}) -- Bring all Finder windows forward when one gets activated
+      app:selectMenuItem({ "Window", "Bring All to Front" }) -- Bring all Finder windows forward when one gets activated
     elseif isEmacsApp then
       emacsCtrlSpaceSwitchIM:enable()
     elseif isVscodeApp then
@@ -213,7 +213,7 @@ local function urlEvent(eventName, params)
   local pid = params and params.pid
   if pid and pid ~= '' then pid = tonumber(pid) end
 
-  log.df("pid is: %d", (params.pid or ''))
+  -- log.df("pid is: %d", (params.pid or ''))
 
   if not pid then
     log.ef("pid is not number: %s", (params.pid or ''))

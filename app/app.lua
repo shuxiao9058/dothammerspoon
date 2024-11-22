@@ -1,4 +1,4 @@
-local M = {}
+﻿local M = {}
 
 local log = hs.logger.new("app")
 log.setLogLevel("debug")
@@ -26,9 +26,9 @@ local launchEmacs = function()
   -- local launchEmacsCmd =
   --     [[do shell script "nohup open $HOME/workspace/emacs/nextstep/Emacs.app > /dev/null 2>&1 &"]]
 
-  local launchEmacsCmd =
-    [[do shell script "nohup /Applications/MacPorts/EmacsMac.app/Contents/MacOS/Emacs.sh > /dev/null 2>&1 &"]]
-  -- local launchEmacsCmd = [[do shell script "open /Applications/MacPorts/Emacs.app"]]
+  -- local launchEmacsCmd =
+  --   [[do shell script "nohup /Applications/MacPorts/EmacsMac.app/Contents/MacOS/Emacs.sh > /dev/null 2>&1 &"]]
+  local launchEmacsCmd = [[do shell script "open /Applications/MacPorts/Emacs.app"]]
 
   -- if isArm64 then
   -- local launchEmacsCmd =
@@ -66,6 +66,13 @@ local appSettings = {
   }, {
     key = "t",
     bundleID = "com.github.wez.wezterm",
+    lang = "English",
+    launchFunc = nil,
+    maximize = true
+  }, {key = nil, bundleID = "org.alacritty", lang = "English", launchFunc = nil, maximize = true},
+  {
+    key = nil,
+    bundleID = "com.mitchellh.ghostty",
     lang = "English",
     launchFunc = nil,
     maximize = true
