@@ -89,10 +89,6 @@ hs.menuIcon(true)
 hs.consoleOnTop(true)
 hs.uploadCrashData(false)
 
-local caffeine = hs.loadSpoon("Caffeine")
-caffeine:bindHotkeys({toggle = {HYPER, "C"}})
-caffeine:start()
-
 -- -- caffeine default on
 -- caffeine:clicked()
 
@@ -224,6 +220,26 @@ hyperfns["R"] = hs.reload
 
 -- switch
 hyperfns["-"] = wifi.toggleWifi
+
+local caffeine = hs.loadSpoon("Caffeine")
+-- caffeine:bindHotkeys({toggle = {HYPER, "C"}})
+local toggle_caffeine = function()
+  caffeine:clicked()
+  local state = hs.caffeinate.get("displayIdle")
+  logger:d('caffeine state is: ', state)
+
+  if state then
+    hs.notify.new({title = 'Caffeine ON', informativeText = 'Caffeine is now on'}):send()
+  else
+    hs.notify.new({title = 'Caffeine OFF', informativeText = 'Caffeine is now off'}):send()
+  end
+end
+hyperfns["C"] = toggle_caffeine
+caffeine:start()
+
+-- force on on start
+hs.timer.doAfter(5,
+                 function() if not hs.caffeinate.get("displayIdle") then toggle_caffeine() end end)
 
 -- hyperfns['t'] = require("blj.blj")
 

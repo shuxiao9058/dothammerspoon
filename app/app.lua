@@ -26,9 +26,9 @@ local launchEmacs = function()
   -- local launchEmacsCmd =
   --     [[do shell script "nohup open $HOME/workspace/emacs/nextstep/Emacs.app > /dev/null 2>&1 &"]]
 
-  -- local launchEmacsCmd =
-  --   [[do shell script "nohup /Applications/MacPorts/EmacsMac.app/Contents/MacOS/Emacs.sh > /dev/null 2>&1 &"]]
-  local launchEmacsCmd = [[do shell script "open /Applications/MacPorts/Emacs.app"]]
+  local launchEmacsCmd =
+    [[do shell script "nohup /Applications/MacPorts/EmacsMac.app/Contents/MacOS/Emacs.sh > /dev/null 2>&1 &"]]
+  -- local launchEmacsCmd = [[do shell script "open /Applications/Emacs.app"]]
 
   -- if isArm64 then
   -- local launchEmacsCmd =
@@ -64,14 +64,15 @@ local appSettings = {
     launchFunc = nil,
     maximize = true
   }, {
-    key = "t",
+    key = nil,
     bundleID = "com.github.wez.wezterm",
     lang = "English",
     launchFunc = nil,
     maximize = true
-  }, {key = nil, bundleID = "org.alacritty", lang = "English", launchFunc = nil, maximize = true},
+  }, {key = 't', bundleID = "org.alacritty", lang = "English", launchFunc = nil, maximize = true},
   {
     key = nil,
+    -- key = "t",
     bundleID = "com.mitchellh.ghostty",
     lang = "English",
     launchFunc = nil,
@@ -134,7 +135,7 @@ local appSettings = {
 }
 
 -- Show launch application's keystroke.
-local showAppKeystrokeAlertId = ""
+-- local showAppKeystrokeAlertId = ""
 
 -- Show launch application's keystroke.
 local showAppKeystrokeAlertId = ""
@@ -200,9 +201,8 @@ function M:updateInputMethod()
       if currentBundleID == bundleID then
         local currentInputMethod = hs.keycodes.currentMethod()
         local currentLayout = hs.keycodes.currentLayout()
-        -- logger:d('currentLayout: ' .. (currentLayout or 'nil') ..
-        --              ',currentInputMethod: ' ..
-        --              (currentInputMethod or 'nil'))
+        -- logger:d('currentLayout: ' .. (currentLayout or 'nil') .. ',currentInputMethod: ' ..
+        --            (currentInputMethod or 'nil'))
 
         if lang == "English" and (currentLayout ~= "U.S." or currentInputMethod) then
           logger:d("bundleID is: " .. bundleID .. ",switch to english")
@@ -230,7 +230,10 @@ function M:toggleMaximized(win, startup, force)
     app = win:application()
   end
 
-  if not app then return end
+  if not app then
+    logger:d("app is nil")
+    return
+  end
 
   if not win then return end
 
@@ -249,9 +252,8 @@ function M:toggleMaximized(win, startup, force)
 
         -- logger:d('create filter')
         if appName == "Emacs" then
-          -- hs.eventtap.keyStroke({
-          --     'alt'
-          -- }, 'F10')
+          logger:d("emacs application")
+          hs.eventtap.keyStroke({"alt"}, "F10")
           -- local spaces = hs.spaces.allSpaces()
           -- hs.spaces.moveWindowToSpace()
           -- hs.spaces.gotoSpace(spaceID)
@@ -402,7 +404,7 @@ M.appImWatcher = function(appName, eventType, appObject)
 end
 
 function M:start()
-  hs.urlevent.bind("toggleEmacs", function(eventName, params)
+  hs.urlevent.bind("toggle_emacs", function(eventName, params)
     local emacsAPPCfg = {
       key = "e",
       bundleID = "org.gnu.Emacs",
@@ -414,8 +416,12 @@ function M:start()
     toggleApp(emacsAPPCfg)
   end)
 
-  -- -- maximize window
-  -- hyperfns['M'] = function() toggleMaximized() end
+  hs.urlevent.bind("lock_screen", function(_, _) hs.caffeinate.lockScreen() end)
+
+  hs.urlevent.bind("update_input_method", function(_, _) M:updateInputMethod() end)
+
+  -- maximize window
+  hyperfns["M"] = function() toggleMaximized() end
 
   --
   -- hyperfns['g'] = function() gitLens() end
