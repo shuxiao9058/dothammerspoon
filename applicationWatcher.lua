@@ -156,6 +156,8 @@ local emacsFocusIn = function(app, statup)
     moveAppToSpace(app, "Emacs")
   end
 
+  log.d('Emacs focus in')
+
   emacsCtrlSpaceSwitchIM:enable()
   myApp:updateInputMethod()
   -- hs.timer.doAfter(1, function()
@@ -173,9 +175,12 @@ local emacsFocusOut = function(app) emacsCtrlSpaceSwitchIM:disable() end
 local applicationWatcher = function(appName, event, app)
   local emacsAppName = 'Emacs'
   local vsCodeAppName = "Code"
+  local kiroAppName = "Kiro"
+  local antigravityAppName = "Antigravity"
 
   local isEmacsApp = emacsAppName == appName
-  local isVscodeApp = vsCodeAppName == appName
+  local isVscodeApp = (vsCodeAppName == appName or kiroAppName == appName or antigravityAppName ==
+                        appName)
   local isBrowersApp = appName == "Google Chrome" or appName == "Firefox" or appName == 'Safari'
 
   -- log.df("event is, app: %s, event: %s, isEmacsApp: %s, isdDeactivated: %s",
