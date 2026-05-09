@@ -14,13 +14,13 @@ package.cpath = package.cpath .. ";" .. "/Users/jiya/.config/yarn/bin/lib/lua/5.
 -- clocking.init()
 
 function isArm64Func()
-  local out = hs.execute("uname -m")
-  if out then
-    out = string.gsub(out, "^%s*(.-)%s*$", "%1")
-    return out == "arm64"
-  end
+    local out = hs.execute("uname -m")
+    if out then
+        out = string.gsub(out, "^%s*(.-)%s*$", "%1")
+        return out == "arm64"
+    end
 
-  return false
+    return false
 end
 
 isArm64 = isArm64Func()
@@ -30,8 +30,8 @@ logger:d("isArm64 is:" .. tostring(isArm64 or "false"))
 require("app.app"):start()
 
 -- Hotkey definitions
-local HYPER = {"ctrl", "alt", "cmd", "shift"}
-local HYPER_MINUS_SHIFT = {"ctrl", "alt", "cmd"}
+local HYPER = { "ctrl", "alt", "cmd", "shift" }
+local HYPER_MINUS_SHIFT = { "ctrl", "alt", "cmd" }
 
 -- Bug-fixed Spoon that handles modal key bindings
 hs.loadSpoon("ModalMgr")
@@ -39,9 +39,9 @@ hs.loadSpoon("ModalMgr")
 hs.loadSpoon("MiroWindowsManager")
 
 keyUpDown = function(modifiers, key)
-  -- Un-comment & reload config to log each keystroke that we're triggering
-  -- self.logger:d('Sending keystroke:', hs.inspect(modifiers), key)
-  hs.eventtap.keyStroke(modifiers, key, 0)
+    -- Un-comment & reload config to log each keystroke that we're triggering
+    -- self.logger:d('Sending keystroke:', hs.inspect(modifiers), key)
+    hs.eventtap.keyStroke(modifiers, key, 0)
 end
 
 -- Subscribe to the necessary events on the given window filter such that the
@@ -54,9 +54,9 @@ end
 --
 -- Returns nothing.
 enableHotkeyForWindowsMatchingFilter = function(windowFilter, hotkey)
-  windowFilter:subscribe(hs.window.filter.windowFocused, function() hotkey:enable() end)
+    windowFilter:subscribe(hs.window.filter.windowFocused, function() hotkey:enable() end)
 
-  windowFilter:subscribe(hs.window.filter.windowUnfocused, function() hotkey:disable() end)
+    windowFilter:subscribe(hs.window.filter.windowUnfocused, function() hotkey:disable() end)
 end
 
 -- local zmc = hs.loadSpoon('zmc')
@@ -161,30 +161,30 @@ hs.window.animationDuration = 0.3
 
 -- Power JSON Editor cmd-t work as new tab
 newTabWithPowerJSONEditor = hs.hotkey.new("cmd", "t", function()
-  hs.application.launchOrFocusByBundleID("com.xujiwei.powerjsoneditor")
-  -- newTabWithPowerJSONEditor:disable() -- does not work without this, even though it should
-  -- hs.eventtap.keyStroke({"cmd"}, "t")
-  local topWindow = hs.window:frontmostWindow()
-  if topWindow ~= nil then
-    local topApp = topWindow:application()
-    if topApp ~= nil then
-      local bunderID = topApp:bundleID()
-      if bunderID == "com.xujiwei.powerjsoneditor" then
-        local newTabAppleScriptFile = hs.configdir ..
-                                        "/applescript/powerjsoneditor_newtab.applescript"
-        hs.osascript.applescriptFromFile(newTabAppleScriptFile)
-      end
+    hs.application.launchOrFocusByBundleID("com.xujiwei.powerjsoneditor")
+    -- newTabWithPowerJSONEditor:disable() -- does not work without this, even though it should
+    -- hs.eventtap.keyStroke({"cmd"}, "t")
+    local topWindow = hs.window:frontmostWindow()
+    if topWindow ~= nil then
+        local topApp = topWindow:application()
+        if topApp ~= nil then
+            local bunderID = topApp:bundleID()
+            if bunderID == "com.xujiwei.powerjsoneditor" then
+                local newTabAppleScriptFile = hs.configdir ..
+                    "/applescript/powerjsoneditor_newtab.applescript"
+                hs.osascript.applescriptFromFile(newTabAppleScriptFile)
+            end
+        end
     end
-  end
 end)
 
 hs.window.filter.new("Power JSON Editor"):subscribe(hs.window.filter.windowFocused, function()
-  newTabWithPowerJSONEditor:enable()
+    newTabWithPowerJSONEditor:enable()
 end):subscribe(hs.window.filter.windowUnfocused, function() newTabWithPowerJSONEditor:disable() end)
 
 local clock = hs.loadSpoon("AClock")
 clock.format = "%H:%M:%S"
-clock.textColor = {hex = "#00c403"}
+clock.textColor = { hex = "#00c403" }
 clock.textFont = "Menlo Bold"
 clock.height = 160
 clock.width = 675
@@ -224,22 +224,22 @@ hyperfns["-"] = wifi.toggleWifi
 local caffeine = hs.loadSpoon("Caffeine")
 -- caffeine:bindHotkeys({toggle = {HYPER, "C"}})
 local toggle_caffeine = function()
-  caffeine:clicked()
-  local state = hs.caffeinate.get("displayIdle")
-  logger:d('caffeine state is: ', state)
+    caffeine:clicked()
+    local state = hs.caffeinate.get("displayIdle")
+    logger:d('caffeine state is: ', state)
 
-  if state then
-    hs.notify.new({title = 'Caffeine ON', informativeText = 'Caffeine is now on'}):send()
-  else
-    hs.notify.new({title = 'Caffeine OFF', informativeText = 'Caffeine is now off'}):send()
-  end
+    if state then
+        hs.notify.new({ title = 'Caffeine ON', informativeText = 'Caffeine is now on' }):send()
+    else
+        hs.notify.new({ title = 'Caffeine OFF', informativeText = 'Caffeine is now off' }):send()
+    end
 end
 hyperfns["C"] = toggle_caffeine
 caffeine:start()
 
 -- force on on start
 hs.timer.doAfter(5,
-                 function() if not hs.caffeinate.get("displayIdle") then toggle_caffeine() end end)
+    function() if not hs.caffeinate.get("displayIdle") then toggle_caffeine() end end)
 
 -- hyperfns['t'] = require("blj.blj")
 
@@ -254,23 +254,23 @@ spoon.FadeLogo:start()
 
 -- For debug
 local function showKeyPress(tapEvent)
-  local charactor = hs.keycodes.map[tapEvent:getKeyCode()]
-  hs.alert.show(charactor, 1.5)
+    local charactor = hs.keycodes.map[tapEvent:getKeyCode()]
+    hs.alert.show(charactor, 1.5)
 end
 
-local keyTap = hs.eventtap.new({hs.eventtap.event.types.keyDown}, showKeyPress)
+local keyTap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, showKeyPress)
 
-k = hs.hotkey.modal.new({"cmd", "shift", "ctrl"}, "P")
+k = hs.hotkey.modal.new({ "cmd", "shift", "ctrl" }, "P")
 function k:entered()
-  hs.alert.show("Enabling Keypress Show Mode", 1.5)
-  keyTap:start()
+    hs.alert.show("Enabling Keypress Show Mode", 1.5)
+    keyTap:start()
 end
 
 function k:exited() hs.alert.show("Disabling Keypress Show Mode", 1.5) end
 
-k:bind({"cmd", "shift", "ctrl"}, "P", function()
-  keyTap:stop()
-  k:exit()
+k:bind({ "cmd", "shift", "ctrl" }, "P", function()
+    keyTap:stop()
+    k:exit()
 end)
 
 local crypto = require("work/crypto")
@@ -308,6 +308,8 @@ notify:start()
 -- logger:d("hostNames: " .. hs.json.encode(hostNames, true))
 
 require("window"):start()
+
+require("batman")
 
 -- local usb = require("usb")
 -- usb:start()
