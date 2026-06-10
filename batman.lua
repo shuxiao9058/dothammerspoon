@@ -23,13 +23,13 @@ end
 local forceCharge = false
 
 function disableCharging()
-    hs.execute('sudo /usr/local/bin/smc -k CH0B -w 02')
-    hs.execute('sudo /usr/local/bin/smc -k CHWA -w 01')
+    -- hs.execute('sudo /usr/local/bin/smc -k CH0B -w 02')
+    -- hs.execute('sudo /usr/local/bin/smc -k CHWA -w 01')
 end
 
 function enableCharging()
-    hs.execute('sudo /usr/local/bin/smc -k CH0B -w 00')
-    hs.execute('sudo /usr/local/bin/smc -k CHWA -w 00')
+    -- hs.execute('sudo /usr/local/bin/smc -k CH0B -w 00')
+    -- hs.execute('sudo /usr/local/bin/smc -k CHWA -w 00')
 end
 
 function chargingDisabled()

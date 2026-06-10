@@ -35,8 +35,61 @@ local HYPER_MINUS_SHIFT = { "ctrl", "alt", "cmd" }
 
 -- Bug-fixed Spoon that handles modal key bindings
 hs.loadSpoon("ModalMgr")
+
+local miroHyper = {"ctrl", "cmd"}
 -- Modified Spoon that manages modal state and UI.
+hs.window.animationDuration = 0
 hs.loadSpoon("MiroWindowsManager")
+local spoon = spoon
+-- spoon.MiroWindowsManager.sizes = { 2, 3, 3 / 2 }
+-- spoon.MiroWindowsManager.sizes = { 2, 3 / 2, 4 / 3, 24 / 23 }
+-- spoon.MiroWindowsManager.sizes = {4/3, 3/2, 2/1, 3/1, 1}
+-- spoon.MiroWindowsManager.GRID = {w = 6, h = 1}
+spoon.MiroWindowsManager.GRID = {w = 24, h = 24}
+spoon.MiroWindowsManager.sizes = { 24/23, 6/5, 4/3, 3/2, 2/1, 3/1, 4/1, 5/1, 6/1, 8/1 }
+-- spoon.MiroWindowsManager.fullScreenSizes = { 1, 4 / 3, 2 }
+spoon.MiroWindowsManager.fullScreenSizes = { 1, 2, 3 / 2, 4 / 3, 24 / 23 }
+spoon.MiroWindowsManager:bindHotkeys({
+  up = {miroHyper, "up"},
+  right = {miroHyper, "right"},
+  down = {miroHyper, "down"},
+  left = {miroHyper, "left"},
+  fullscreen = {miroHyper, "m"},
+})
+
+local alt_cmd = {"alt", "cmd"}
+hs.loadSpoon("WindowScreenLeftAndRight")
+spoon.WindowScreenLeftAndRight.animationDuration = 0
+spoon.WindowScreenLeftAndRight:bindHotkeys(
+    {
+        screen_left = { alt_cmd, "Left" },
+        screen_right= { alt_cmd, "Right" },
+    })
+
+-- --- winwin to move windows around and also move from screen to screen
+-- hs.loadSpoon("WinWin")
+-- spoon.WinWin.gridparts = 24
+-- function centerCursor(cwin)
+--     local wf = cwin:frame()
+--     local cscreen = cwin:screen()
+--     local cres = cscreen:fullFrame()
+--     if cwin then
+--         -- Center the cursor one the focused window
+--         hs.mouse.absolutePosition({x=wf.x+wf.w/2, y=wf.y+wf.h/2})
+--     else
+--         -- Center the cursor on the screen
+--         hs.mouse.setAbsolutePosition({x=cres.x+cres.w/2, y=cres.y+cres.h/2})
+--     end
+-- end
+-- --- hs.hotkey.bind( mash, "[",      "screen left",  function() local cwin = hs.window.focusedWindow() spoon.WinWin:moveToScreen("left")  centerCursor(cwin) end)
+-- --- hs.hotkey.bind( mash, "]",      "screen right", function() local cwin = hs.window.focusedWindow() spoon.WinWin:moveToScreen("right") centerCursor(cwin) end)
+-- hs.hotkey.bind( mash, "[",      "screen left",  function() local cwin = hs.window.focusedWindow() spoon.WinWin:moveToScreen("left")  end)
+-- hs.hotkey.bind( mash, "]",      "screen right", function() local cwin = hs.window.focusedWindow() spoon.WinWin:moveToScreen("right") end)
+-- hs.hotkey.bind( mish, "left",   "move left",    function() local cwin = hs.window.focusedWindow() spoon.WinWin:stepMove("left")      centerCursor(cwin) end)
+-- hs.hotkey.bind( mish, "right",  "move right",   function() local cwin = hs.window.focusedWindow() spoon.WinWin:stepMove("right")     centerCursor(cwin) end)
+-- hs.hotkey.bind( mish, "up",     "move up",      function() local cwin = hs.window.focusedWindow() spoon.WinWin:stepMove("up")        centerCursor(cwin) end)
+-- hs.hotkey.bind( mish, "down",   "move down",    function() local cwin = hs.window.focusedWindow() spoon.WinWin:stepMove("down")      centerCursor(cwin) end)
+
 
 keyUpDown = function(modifiers, key)
     -- Un-comment & reload config to log each keystroke that we're triggering
@@ -309,7 +362,7 @@ notify:start()
 
 require("window"):start()
 
-require("batman")
+-- require("batman")
 
 -- local usb = require("usb")
 -- usb:start()
